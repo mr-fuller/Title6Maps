@@ -8,222 +8,25 @@ import requests
 import pandas
 import os
 import pandas as pd
-import variables
+from variables import year_int,api_pull,api_key,fips
 from builddirectory import builddirectory
 from buildacsdict import buildacsdict
+from downloadandsave import download_and_save_data
+from spatialize import spatialize
 from datetime import datetime
 start_time = datetime.now()
-api_key = 'b7da053b9e664586b9e559dba9e73780602f0aab'  # CGR's API key
-
-fips = {
-    'Fulton': '39051',
-    'Hancock': '39063',
-    'Henry': '39069',
-    'Huron': '39077',
-    'Lucas': '39095',
-    'Ottawa': '39123',
-    'Putnam': '39137',
-    'Sandusky': '39143',
-    'Seneca': '39147',
-    'Wood': '39173',
-    'Lenawee': '26091',
-    'Monroe': '26115'
-}
-
-variable_list = ['B18101',  # The table number for disability information
-                 'B16004',  # table number for english as a second language
-                 'B17017',  # table number for poverty stats
-                 'B03002',  # table number for race info
-                 'B01001',  # table with age information
-                 'B25044',  # table with info on no-car households
-                 'B19013'   # table with median income estimates
-                 ]
 
 
-counties = ['Fulton', 'Hancock', 'Henry','Huron', 'Lucas', 'Ottawa', 'Putnam', 'Sandusky', 'Seneca', 'Wood', 'Lenawee','Monroe']
-api_pull = {}
-for x in range(0, len(counties)):
-    api_pull[counties[x]] = variable_list
+base_dir = builddirectory()
 
-print(api_pull)
-
-# You should not need to edit below this line
-# =============================================================================
-'''
-##
-# GET THE USER'S INPUT ON WHAT DATA TO PULL
-##
-year = datetime.now()
-# year = input('What ACS 5 year data set (enter 2013 for 2009-13)? ')#input function creates a string
-year_int = datetime.now().year - 1 # for the 2017 run, this will return 2016 ACS Data
-print('Fetching Data for ' + str(year_int))
-##
-# BUILD DIRECTORIES ON Z TO HOLD CSV FILES
-##
-print('  Building directory structure on Z:\...'),  # add a line to handle exceptions?
-acs_year = str(year_int-4) + 'to' + str(year_int)[-2:]
-base_dir = "Z:/fullerm/Census_Bureau/American_Community_Survey/" + acs_year
-# Create base directory if it doesn't exist
-if not os.path.exists(base_dir):
-    os.makedirs(base_dir)
-# Create subdirectories if they don't exist
-for geo in api_pull:
-    directory = base_dir + '\\' + geo
-    if not os.path.exists(directory):
-        os.makedirs(directory)
-print('\bDone')'''
-builddirectory()
-'''## 
-# PULLING THE VARIABLE LIST FROM API
-##
-
-# Now that we know what year of data the user wants we need to pull the 
-# variable list.
-
-print('  Pulling JSON variable list...'),
-# Build the API URL
-variables_url = 'https://api.census.gov/data/' + str(year_int) + '/acs/acs5/variables.json'
-# Read in the data
-data = requests.get(url=variables_url)
-# Check to make sure we could pull variables
-if data.status_code == 404:
-
-    print('\bFailed')
-    import sys
-    sys.exit('You entered an invalid ACS year.  Please try again.')
-else:
-    data = data.json()
-    print('\bDone')
-
-
-## 
-# BUILDING ACS TABLE VARIABLE LIST DICTIONARY
-##
-
-# We now will iterate through the data and build a dictionary that has all
-# the variables associated with the table.
-
-print('  Building table list...'),
-table_list = list()  # This will hold all the tables. also, []
-acs_dict = dict()  # This will hold the variables by table. also, {}
-# Iterate through the variables
-for variable in data['variables']:
-    s = variable.split('_')  # Break the string apart by the underscore.
-    table = s[0]  # This is the table name.
-    
-    if not table in table_list:
-        table_list.append(table)  # Add it to the table list
-        var_list = list()  # Create an empty list for the acs_dict
-        var_list.append(variable)  # Put the variable name in the list
-        acs_dict[table] = var_list  # Add the variable list to the dictionary
-    else:
-        var_list = acs_dict[table]  # Pull the existing variable list
-        var_list.append(variable)  # Add in the new variable
-        var_list.sort()  # Sort it (so the estimates are followed by the MOE)
-        acs_dict[table] = var_list  # Replace the list with the updated one
-print('\bDone')
-
-# Now that this has been complete we can call acs_dict['B10001'] to get all
-# the variables in the table'''
-acs_dict = buildacsdict()
+acs_dict = buildacsdict()[0]
+table_list = buildacsdict()[1]
 ##
 # DOWNLOAD ACS DATA
 ##
 
 
-def download_and_save_data(acs_dict, fips, location, api_key, api_url_base, base_dir, table):
-    # Since there is a 50 variable maximum we need to see how many calls
-    # to the API we need to make to get all the variables.
-    api_calls_needed = (len(acs_dict[table])//49)+1
-    api_calls_done = 0
-    variable_range = 49
-    while api_calls_done < api_calls_needed:
-        get_string = ''
-        print('        API Call Set ' + str(api_calls_done+1) + ' of ' + str(api_calls_needed))
-        variable_range_start = variable_range * api_calls_done
-        variable_range_end = variable_range_start + variable_range
-        for variable in acs_dict[table][variable_range_start:variable_range_end]:
-            get_string = get_string + ',' + variable
 
-        # Get Census Tract Level Data
-        # Pull all Census Tracts in the TMACOG Planning Area
-        api_url = api_url_base + get_string + '&for=tract:*&in=state:' + fips[location][:2] + '+county:' + fips[location][2:] + '&key=' + api_key
-        tract_data = pandas.io.json.read_json(api_url)
-        tract_data.columns = tract_data[:1].values.tolist()  # Rename columns based on first row
-        tract_data['Geocode'] = tract_data['state'] + tract_data['county'] + tract_data['tract']
-        tract_data = tract_data[1:]  # Drop first row
-
-        # Pull all Block Groups in the TMACOG Planning Area
-        api_url = api_url_base + get_string + '&for=block+group:*&in=state:' + fips[location][:2] + '+county:' + fips[location][2:] + '&key='+api_key
-        block_group_data = pandas.io.json.read_json(api_url)
-        block_group_data.columns = block_group_data[:1].values.tolist()  # Rename columns based on first row
-        block_group_data['Geocode'] = block_group_data['state'] + block_group_data['county'] + block_group_data['tract'] + block_group_data['block group']
-        block_group_data = block_group_data[1:]  # Drop first row
-
-        # Build long table by append rows
-        temp_t = tract_data
-        temp_b = block_group_data
-        
-        # Add columns if the final data frame is created
-        if api_calls_done == 0:
-            data_t = temp_t
-            data_b = temp_b
-        else:
-            data_t = pandas.concat([data_t, temp_t], axis=1)
-            data_b = pandas.concat([data_b, temp_b], axis=1)
-        api_calls_done += 1
-        
-    csv_path_t = base_dir + '\\' + location + '\\' + table + '_t.csv'
-    csv_path_b = base_dir + '\\' + location + '\\' + table + '_b.csv'
-    
-    # Pull out the Geocode and Name        
-    geocode_t = data_t['Geocode']
-    geocode_b = data_b['Geocode']
-    print(geocode_t)
-    series = type(pandas.Series())
-    # if type(geocode_t) == 'pandas.core.series.Series':
-    if isinstance(geocode_t, series): #if geocode is a series class, change it to a dataframe class
-        geocode_t = pandas.DataFrame(geocode_t, columns=['Geocode'])
-    else: # otherwise slice it
-        geocode_t = geocode_t.iloc[:,0] # this should return the first column
-    print(geocode_t)
-    # if type(geocode_b) == 'pandas.core.series.Series':
-    if isinstance(geocode_b, series):
-        geocode_b = pandas.DataFrame(geocode_b, columns=['Geocode'])
-    else:
-        geocode_b = geocode_b.iloc[:,0] # this should return the first column
-
-    name_t = data_t['NAME']
-    name_b = data_b['NAME']
-    if isinstance(name_t, series):
-        name_t = pandas.DataFrame(name_t, columns=['NAME'])
-    else:
-        name_t = name_t.iloc[:,0]# this should return the first column
-    if isinstance(name_b, series):
-        name_b = pandas.DataFrame(name_b, columns=['NAME'])
-    else:
-        name_b = name_b.iloc[:,0] # this should return the first column
-    # Drop unneeded columns in they exist
-    data_t = data_t.drop(['state','county','tract'], axis=1)  # Drop the state, county, and tract column
-    # data_t = data_t.drop(['county'], axis=1)  # Drop the county column
-    # data_t = data_t.drop(['block group'], axis=1)  # Drop the place column
-    # data_t = data_t.drop(['tract'], axis=1)  # Drop the county subdivision column
-    
-    data_b = data_b.drop(['state','county','block group','tract'], axis=1)  # Drop the state column
-    # data_b = data_b.drop(['county'], axis=1)  # Drop the county column
-    # data_b = data_b.drop(['block group'], axis=1)  # Drop the place column
-    # data_b = data_b.drop(['tract'], axis=1)  # Drop the county subdivision column
-    # Drop the location information
-    data_t = data_t.drop(['Geocode','NAME'], axis=1)
-    # data_t = data_t.drop(['NAME'], axis=1)
-    data_b = data_b.drop(['Geocode','NAME'], axis=1)
-    # data_b = data_b.drop(['NAME'], axis=1)
-    # Build data frame with columns in the desired order
-    data_t = pandas.concat([geocode_t, name_t, data_t], axis=1)
-    data_t.to_csv(csv_path_t, index=False)
-    data_b = pandas.concat([geocode_b, name_b, data_b], axis=1)
-    data_b.to_csv(csv_path_b, index=False)
-    print('      Table '+table+' Downloaded and Saved')
 
 print('  Downloading tables for')
 not_available_via_api = list()  # This will hold the tables we can't get via the API
@@ -380,81 +183,9 @@ for location in api_pull:
     counties_b.to_csv(base_dir + '\\Title6_b.csv')
     print('\bDone')
 
+spatialize(base_dir)
 # This section joins tables to respective geographies
-import arcpy
-# , os
-# from arcpy import env
-# from datetime import date
-# base_dir = "Z:/fullerm/Census Bureau/American Community Survey/2010-14"
 
-arcpy.env.overwriteOutput = True
-
-print('  Preparing data in ArcMap...'),
-
-TimeDate = datetime.datetime.now()
-TimeDateStr = "Title6" + TimeDate.strftime('%Y%m%d%H%M')
-outputGDB = arcpy.CreateFileGDB_management(base_dir,TimeDateStr + ".gdb")
-arcpy.env.workspace = base_dir
-tractdata = base_dir + '\\Title6_t.csv'
-bgdata = base_dir + '\\Title6_b.csv'
-
-cttable = arcpy.TableToTable_conversion(tractdata,outputGDB,"Tract_Data")
-bgtable = arcpy.TableToTable_conversion(bgdata,outputGDB,"Block_Group_Data")
-
-mi_gdb = "Z:/fullerm/GIS_Data/MI/tlgdb_2015_a_26_mi.gdb/"
-mi_ct = arcpy.FeatureClassToFeatureClass_conversion(mi_gdb + "Census_Tract", outputGDB, "MI_Census_Tract")
-
-mi_bg = arcpy.FeatureClassToFeatureClass_conversion(mi_gdb + "Block_Group", outputGDB, "MI_Block_Group")
-oh_gdb = "Z:/fullerm/GIS_Data/OH/tlgdb_2015_a_39_oh.gdb/"
-oh_ct = arcpy.FeatureClassToFeatureClass_conversion(oh_gdb + "Census_Tract", outputGDB, "OH_Census_Tract")
-
-oh_bg = arcpy.FeatureClassToFeatureClass_conversion(oh_gdb + "Block_Group", outputGDB, "OH_Block_Group")
-
-merge_ct = str(outputGDB) + '\\TMACOG_ct'
-merge_bg = str(outputGDB) + '\\TMACOG_bg'
-mpo_ct = arcpy.Merge_management([mi_ct, oh_ct], merge_ct)
-mpo_bg = arcpy.Merge_management([mi_bg, oh_bg], merge_bg)
-
-arcpy.AddField_management(bgtable, "Geocode_STR", "TEXT")
-arcpy.CalculateField_management(bgtable, "Geocode_STR", "str('{:f}'.format(!Geocode!)).rstrip('.0')","PYTHON")
-
-arcpy.AddField_management(cttable, "Geocode_STR", "TEXT")
-arcpy.CalculateField_management(cttable, "Geocode_STR", "str('{:f}'.format(!Geocode!))[:-7]","PYTHON")
-# create temporary layers so that the AddJoin tool works
-mpo_ct_lyr = arcpy.MakeFeatureLayer_management(mpo_ct, "mpo_ct_lyr")
-mpo_bg_lyr = arcpy.MakeFeatureLayer_management(mpo_bg, "mpo_bg_lyr")
-
-mpo_ctjoin = arcpy.AddJoin_management(mpo_ct_lyr, "GEOID", cttable, "Geocode_STR", "KEEP_COMMON")
-mpo_bgjoin = arcpy.AddJoin_management(mpo_bg_lyr, "GEOID", bgtable, "Geocode_STR", "KEEP_COMMON")
-
-ohmi_ctout = arcpy.FeatureClassToFeatureClass_conversion(mpo_ctjoin, str(outputGDB), "TMACOG_Title_6_ct")
-ohmi_bgout = arcpy.FeatureClassToFeatureClass_conversion(mpo_bgjoin, str(outputGDB), "TMACOG_Title_6_bg")
-
-# clip data to county boundaries
-stencil = arcpy.MakeFeatureLayer_management("Z:/fullerm/GIS_Data/TMACOG.gdb/County_boundaries_stencil3857", "stencil")
-ohmi_ctout_lyr = arcpy.MakeFeatureLayer_management(ohmi_ctout, "ohmi_ct_lyr")
-ohmi_bgout_lyr = arcpy.MakeFeatureLayer_management(ohmi_bgout, "ohmi_bg_lyr")
-print(' \bDone')
-print('  Clipping features...')
-
-ohmi_bg_clipped = arcpy.Clip_analysis(ohmi_bgout_lyr, stencil, str(outputGDB) + '\\TMACOG_Title_6_bg_clipped')
-ohmi_ct_clipped = arcpy.Clip_analysis(ohmi_ctout_lyr, stencil, str(outputGDB) + '\\TMACOG_Title_6_ct_clipped')
-# arcpy.mp.LayerFile()
-ohmi_bg_clipped_lyr = arcpy.MakeFeatureLayer_management(ohmi_bg_clipped, "ohmi_bg_clipped_lyr")
-ohmi_ct_clipped_lyr = arcpy.MakeFeatureLayer_management(ohmi_ct_clipped, "ohmi_ct_clipped_lyr")
-# create layer objects for block groups and census tracts
-pn = "American_Community_Survey_Data"
-proj_loc = "C:/Users/fullerm/Documents/ArcGIS/Projects/" + pn + "/"
-bg_lyrx = arcpy.SaveToLayerFile_management(ohmi_bg_clipped_lyr, proj_loc + 'ohmi_bg_clipped.lyrx')
-ct_lyrx = arcpy.SaveToLayerFile_management(ohmi_ct_clipped_lyr, proj_loc + 'ohmi_ct_clipped.lyrx')
-# open existing ArcMap Document and add data
-aprx = arcpy.mp.ArcGISProject("C:/Users/fullerm/Documents/ArcGIS/Projects/" + pn + '\\' + pn + ".aprx")
-m = aprx.listMaps('Map')[0]
-bg_lyrFile = arcpy.mp.LayerFile(bg_lyrx)
-m.addLayer(bg_lyrFile)
-ct_lyrFile = arcpy.mp.LayerFile(ct_lyrx)
-m.addLayer(ct_lyrFile)
-aprx.save()
 # manipulate layers to display data
 
 # export to pdf
@@ -496,6 +227,6 @@ with smtplib.SMTP('smtp-mail.outlook.com',587) as s:
     s.login('mikerfuller@live.com','zkecjvqtvcplzysx')
     s.send_message(msg)
 '''
-end_time = datetime.datetime.now()
+end_time = datetime.now()
 elapsed = end_time - start_time
 print("Script complete in " + str(elapsed))

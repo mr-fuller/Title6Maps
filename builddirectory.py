@@ -25,7 +25,7 @@ def builddirectory():
             os.makedirs(directory)
     print('\bDone')
 
-    return
+    return base_dir
 
 if __name__ == '__main__':
     builddirectory()

@@ -52,7 +52,7 @@ def buildacsdict():
             var_list.sort()  # Sort it (so the estimates are followed by the MOE)
             acs_dict[table] = var_list  # Replace the list with the updated one
     print('\bDone')
-    return acs_dict
+    return [acs_dict, table_list]
     # Now that this has been complete we can call acs_dict['B10001'] to get all
     # the variables in the table
 
