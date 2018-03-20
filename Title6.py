@@ -17,9 +17,10 @@ fips = {
     'Fulton': '39051',
     'Hancock': '39063',
     'Henry': '39069',
+    'Huron': '39077',
     'Lucas': '39095',
     'Ottawa': '39123',
-    'Putnam': '3937',
+    'Putnam': '39137',
     'Sandusky': '39143',
     'Seneca': '39147',
     'Wood': '39173',
@@ -37,7 +38,7 @@ variable_list = ['B18101',  # The table number for disability information
                  ]
 
 
-counties = ['Fulton', 'Hancock', 'Henry', 'Lucas', 'Ottawa', 'Putnam', 'Sandusky', 'Seneca', 'Wood', 'Lenawee', 'Monroe']
+counties = ['Fulton', 'Hancock', 'Henry','Huron', 'Lucas', 'Ottawa', 'Putnam', 'Sandusky', 'Seneca', 'Wood', 'Lenawee','Monroe']
 api_pull = {}
 for x in range(0, len(counties)):
     api_pull[counties[x]] = variable_list
@@ -52,7 +53,7 @@ print(api_pull)
 ##
 year = datetime.now()
 # year = input('What ACS 5 year data set (enter 2013 for 2009-13)? ')#input function creates a string
-year_int = 2015
+year_int = datetime.now().year - 1 # for the 2017 run, this will return 2016 ACS Data
 print('Fetching Data for ' + str(year_int))
 ##
 # BUILD DIRECTORIES ON Z TO HOLD CSV FILES
@@ -79,11 +80,12 @@ print('\bDone')
 
 print('  Pulling JSON variable list...'),
 # Build the API URL
-variables_url = 'http://api.census.gov/data/' + str(year_int) + '/acs5/variables.json'
+variables_url = 'https://api.census.gov/data/' + str(year_int) + '/acs/acs5/variables.json'
 # Read in the data
 data = requests.get(url=variables_url)
 # Check to make sure we could pull variables
 if data.status_code == 404:
+
     print('\bFailed')
     import sys
     sys.exit('You entered an invalid ACS year.  Please try again.')
@@ -175,42 +177,45 @@ def download_and_save_data(acs_dict, fips, location, api_key, api_url_base, base
     # Pull out the Geocode and Name        
     geocode_t = data_t['Geocode']
     geocode_b = data_b['Geocode']
+    print(geocode_t)
     series = type(pandas.Series())
     # if type(geocode_t) == 'pandas.core.series.Series':
-    if isinstance(geocode_t, series):
+    if isinstance(geocode_t, series): #if geocode is a series class, change it to a dataframe class
         geocode_t = pandas.DataFrame(geocode_t, columns=['Geocode'])
-    else:
-        geocode_t = geocode_t[[1]]
+    else: # otherwise slice it
+        geocode_t = geocode_t.iloc[:,0] # this should return the first column
+    print(geocode_t)
     # if type(geocode_b) == 'pandas.core.series.Series':
     if isinstance(geocode_b, series):
         geocode_b = pandas.DataFrame(geocode_b, columns=['Geocode'])
     else:
-        geocode_b = geocode_b[[1]]
+        geocode_b = geocode_b.iloc[:,0] # this should return the first column
+
     name_t = data_t['NAME']
     name_b = data_b['NAME']
     if isinstance(name_t, series):
         name_t = pandas.DataFrame(name_t, columns=['NAME'])
     else:
-        name_t = name_t[[1]]
+        name_t = name_t.iloc[:,0]# this should return the first column
     if isinstance(name_b, series):
         name_b = pandas.DataFrame(name_b, columns=['NAME'])
     else:
-        name_b = name_b[[1]]    
+        name_b = name_b.iloc[:,0] # this should return the first column
     # Drop unneeded columns in they exist
-    data_t = data_t.drop(['state'], axis=1)  # Drop the state column
-    data_t = data_t.drop(['county'], axis=1)  # Drop the county column
+    data_t = data_t.drop(['state','county','tract'], axis=1)  # Drop the state, county, and tract column
+    # data_t = data_t.drop(['county'], axis=1)  # Drop the county column
     # data_t = data_t.drop(['block group'], axis=1)  # Drop the place column
-    data_t = data_t.drop(['tract'], axis=1)  # Drop the county subdivision column
+    # data_t = data_t.drop(['tract'], axis=1)  # Drop the county subdivision column
     
-    data_b = data_b.drop(['state'], axis=1)  # Drop the state column
-    data_b = data_b.drop(['county'], axis=1)  # Drop the county column
-    data_b = data_b.drop(['block group'], axis=1)  # Drop the place column
-    data_b = data_b.drop(['tract'], axis=1)  # Drop the county subdivision column
+    data_b = data_b.drop(['state','county','block group','tract'], axis=1)  # Drop the state column
+    # data_b = data_b.drop(['county'], axis=1)  # Drop the county column
+    # data_b = data_b.drop(['block group'], axis=1)  # Drop the place column
+    # data_b = data_b.drop(['tract'], axis=1)  # Drop the county subdivision column
     # Drop the location information
-    data_t = data_t.drop(['Geocode'], axis=1)
-    data_t = data_t.drop(['NAME'], axis=1)
-    data_b = data_b.drop(['Geocode'], axis=1)
-    data_b = data_b.drop(['NAME'], axis=1)
+    data_t = data_t.drop(['Geocode','NAME'], axis=1)
+    # data_t = data_t.drop(['NAME'], axis=1)
+    data_b = data_b.drop(['Geocode','NAME'], axis=1)
+    # data_b = data_b.drop(['NAME'], axis=1)
     # Build data frame with columns in the desired order
     data_t = pandas.concat([geocode_t, name_t, data_t], axis=1)
     data_t.to_csv(csv_path_t, index=False)
@@ -230,7 +235,7 @@ for location in api_pull:
     for table in api_pull[location]:
         j += 1
         print('      Table ' + table + '(' + str(j) + ' of ' + str(len(api_pull[location])) + ')')
-        api_url_base = 'http://api.census.gov/data/' + str(year_int) + '/acs5?get=NAME'
+        api_url_base = 'http://api.census.gov/data/' + str(year_int) + '/acs/acs5?get=NAME'
         if table in table_list:
             download_and_save_data(acs_dict, fips, location, api_key, api_url_base, base_dir, table)
             df2_t = pd.DataFrame() 
@@ -372,10 +377,7 @@ for location in api_pull:
     counties_b = counties_b.append(df00b)
     counties_b.to_csv(base_dir + '\\Title6_b.csv')
     print('\bDone')
-print('All data is now stored on the Z drive!')
-print('\rThe following tables were not downloaded:')
-for table in not_available_via_api:
-    print('  ' + table)
+
 # This section joins tables to respective geographies
 import arcpy
 # , os
@@ -427,7 +429,7 @@ ohmi_ctout = arcpy.FeatureClassToFeatureClass_conversion(mpo_ctjoin, str(outputG
 ohmi_bgout = arcpy.FeatureClassToFeatureClass_conversion(mpo_bgjoin, str(outputGDB), "TMACOG_Title_6_bg")
 
 # clip data to county boundaries
-stencil = arcpy.MakeFeatureLayer_management("Z:/fullerm/GIS_Data/TMACOG.gdb/FLOWHHMS_Clip", "stencil")
+stencil = arcpy.MakeFeatureLayer_management("Z:/fullerm/GIS_Data/TMACOG.gdb/County_boundaries_stencil3857", "stencil")
 ohmi_ctout_lyr = arcpy.MakeFeatureLayer_management(ohmi_ctout, "ohmi_ct_lyr")
 ohmi_bgout_lyr = arcpy.MakeFeatureLayer_management(ohmi_bgout, "ohmi_bg_lyr")
 print(' \bDone')
@@ -455,7 +457,11 @@ aprx.save()
 
 # export to pdf
 print('\bDone')
-
+print('All data is now stored on the Z drive!')
+print('\rThe following tables were not downloaded:')
+for table in not_available_via_api:
+    print('  ' + table)
+'''
 print('  Uploading to ArcGIS Online...')
 
 
@@ -473,6 +479,21 @@ arcpy.UploadServiceDefinition_server(sd,'My Hosted Services')
 print(' Uploaded!')
 
 print('\bDone')
+
+import smtplib
+from email.mime.text import MIMEText
+SUBJECT = 'Title6 Script Complete'
+FROM = 'mikerfuller@live.com'
+TO = 'fuller@tmacog.org'
+msg = MIMEText(str(year_int-1)+ " ACS Data now available on the Z Drive and ArcGIS Online")
+msg['From'] = FROM
+msg['To'] = TO
+msg['Subject'] = SUBJECT
+with smtplib.SMTP('smtp-mail.outlook.com',587) as s:
+    s.starttls()
+    s.login('mikerfuller@live.com','zkecjvqtvcplzysx')
+    s.send_message(msg)
+'''
 end_time = datetime.datetime.now()
 elapsed = end_time - start_time
 print("Script complete in " + str(elapsed))
