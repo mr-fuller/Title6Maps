@@ -8,7 +8,9 @@ import requests
 import pandas
 import os
 import pandas as pd
-
+import variables
+from builddirectory import builddirectory
+from buildacsdict import buildacsdict
 from datetime import datetime
 start_time = datetime.now()
 api_key = 'b7da053b9e664586b9e559dba9e73780602f0aab'  # CGR's API key
@@ -47,7 +49,7 @@ print(api_pull)
 
 # You should not need to edit below this line
 # =============================================================================
-
+'''
 ##
 # GET THE USER'S INPUT ON WHAT DATA TO PULL
 ##
@@ -69,9 +71,9 @@ for geo in api_pull:
     directory = base_dir + '\\' + geo
     if not os.path.exists(directory):
         os.makedirs(directory)
-print('\bDone')
-
-## 
+print('\bDone')'''
+builddirectory()
+'''## 
 # PULLING THE VARIABLE LIST FROM API
 ##
 
@@ -122,8 +124,8 @@ for variable in data['variables']:
 print('\bDone')
 
 # Now that this has been complete we can call acs_dict['B10001'] to get all
-# the variables in the table
-
+# the variables in the table'''
+acs_dict = buildacsdict()
 ##
 # DOWNLOAD ACS DATA
 ##
