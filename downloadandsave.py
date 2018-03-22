@@ -8,10 +8,10 @@ from variables import api_key, api_pull
 ##
 
 
-def download_and_save_data(acs_dict, fips, location, api_key, api_url_base, base_dir, table):
+def download_and_save_data(acs_dict, fips, location, api_key, api_url_base, base_dir):
     # Since there is a 50 variable maximum we need to see how many calls
     # to the API we need to make to get all the variables.
-    api_calls_needed = (len(acs_dict[table]) // 49) + 1
+    api_calls_needed = (len(acs_dict) // 49) + 1
     api_calls_done = 0
     variable_range = 49
     while api_calls_done < api_calls_needed:
@@ -19,14 +19,14 @@ def download_and_save_data(acs_dict, fips, location, api_key, api_url_base, base
         print('        API Call Set ' + str(api_calls_done + 1) + ' of ' + str(api_calls_needed))
         variable_range_start = variable_range * api_calls_done
         variable_range_end = variable_range_start + variable_range
-        for variable in acs_dict[table][variable_range_start:variable_range_end]:
+        for variable in acs_dict[variable_range_start:variable_range_end]:
             get_string = get_string + ',' + variable
 
         # Get Census Tract Level Data
         # Pull all Census Tracts in the TMACOG Planning Area
-        api_url = api_url_base + get_string + '&for=tract:*&in=state:' + fips[location][:2] + '+county:' + fips[
-                                                                                                               location][
-                                                                                                           2:] + '&key=' + api_key
+        api_url = api_url_base + get_string + '&for=tract:*&in=state:' + fips[location][:2] + \
+                  '+county:' + fips[location][2:] + '&key=' + api_key
+        #print(api_url)
         tract_data = pd.io.json.read_json(api_url)
         tract_data.columns = tract_data[:1].values.tolist()  # Rename columns based on first row
         tract_data['Geocode'] = tract_data['state'] + tract_data['county'] + tract_data['tract']
@@ -55,8 +55,8 @@ def download_and_save_data(acs_dict, fips, location, api_key, api_url_base, base
             data_b = pd.concat([data_b, temp_b], axis=1)
         api_calls_done += 1
 
-    csv_path_t = base_dir + '\\' + location + '\\' + table + '_t.csv'
-    csv_path_b = base_dir + '\\' + location + '\\' + table + '_b.csv'
+    csv_path_t = base_dir + '\\' + location + '\\Title6_t.csv'
+    csv_path_b = base_dir + '\\' + location + '\\Title6_b.csv'
 
     # Pull out the Geocode and Name
     geocode_t = data_t['Geocode']
@@ -65,15 +65,15 @@ def download_and_save_data(acs_dict, fips, location, api_key, api_url_base, base
     series = type(pd.Series())
     # if type(geocode_t) == 'pandas.core.series.Series':
     if isinstance(geocode_t, series):  # if geocode is a series class, change it to a dataframe class
-        geocode_t = pd.DataFrame(geocode_t, columns=['Geocode'])
+        geocode_t = pd.DataFrame(geocode_t, columns=['Geocode'],dtype= 'str')
     else:  # otherwise slice it
-        geocode_t = geocode_t.iloc[:, 0]  # this should return the first column
+        geocode_t = geocode_t.iloc[:, 0].astype('str')  # this should return the first column
     print(geocode_t)
     # if type(geocode_b) == 'pandas.core.series.Series':
     if isinstance(geocode_b, series):
-        geocode_b = pd.DataFrame(geocode_b, columns=['Geocode'])
+        geocode_b = pd.DataFrame(geocode_b, columns=['Geocode'], dtype= 'str')
     else:
-        geocode_b = geocode_b.iloc[:, 0]  # this should return the first column
+        geocode_b = geocode_b.iloc[:, 0].astype('str')  # this should return the first column
 
     name_t = data_t['NAME']
     name_b = data_b['NAME']
@@ -97,15 +97,18 @@ def download_and_save_data(acs_dict, fips, location, api_key, api_url_base, base
     # data_b = data_b.drop(['tract'], axis=1)  # Drop the county subdivision column
     # Drop the location information
     data_t = data_t.drop(['Geocode', 'NAME'], axis=1)
+    data_t = data_t.astype(dtype = 'float', na = 0)
     # data_t = data_t.drop(['NAME'], axis=1)
     data_b = data_b.drop(['Geocode', 'NAME'], axis=1)
+    data_b = data_b.astype(dtype = 'float', na = 0)
     # data_b = data_b.drop(['NAME'], axis=1)
     # Build data frame with columns in the desired order
     data_t = pd.concat([geocode_t, name_t, data_t], axis=1)
-    data_t.to_csv(csv_path_t, index=False)
+    #data_t.to_csv(csv_path_t, index=False)
     data_b = pd.concat([geocode_b, name_b, data_b], axis=1)
-    data_b.to_csv(csv_path_b, index=False)
-    print('      Table ' + table + ' Downloaded and Saved')
+    #data_b.to_csv(csv_path_b, index=False)
+    return [data_b,data_t]
+    print('      Table ' + location + ' Downloaded and Saved')
 
 
 '''print('  Downloading tables for')

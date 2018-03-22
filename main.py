@@ -8,7 +8,7 @@ import requests
 import pandas
 import os
 import pandas as pd
-from variables import year_int,api_pull,api_key,fips
+from variables import year_int,api_pull,api_key,fips, variable_list, poverty_level
 from builddirectory import builddirectory
 from buildacsdict import buildacsdict
 from downloadandsave import download_and_save_data
@@ -36,98 +36,115 @@ counties_b = pd.DataFrame()
 for location in api_pull:
     i += 1
     print('    '+location+' (Location '+str(i)+' of '+str(len(api_pull))+')')
-    j = 0
-    for table in api_pull[location]:
-        j += 1
-        print('      Table ' + table + '(' + str(j) + ' of ' + str(len(api_pull[location])) + ')')
-        api_url_base = 'http://api.census.gov/data/' + str(year_int) + '/acs/acs5?get=NAME'
-        if table in table_list:
-            download_and_save_data(acs_dict, fips, location, api_key, api_url_base, base_dir, table)
-            df2_t = pd.DataFrame() 
-            df2_b = pd.DataFrame()
+    #j = 0
+    #for table in api_pull[location]:
+    #j += 1
+    #print('      Table (' + str(j) + ' of ' + str(len(api_pull[location])) + ')')
+    api_url_base = 'http://api.census.gov/data/' + str(year_int) + '/acs/acs5?get=NAME'
+    #if table in table_list:
+    dfs = download_and_save_data(variable_list, fips, location, api_key, api_url_base, base_dir)
+    df2_t = pd.DataFrame()
+    df2_b = pd.DataFrame()
 
-            if table == 'B01001':
-                df_t = pandas.read_csv(base_dir + '\\' + location + '\\' + table + '_t.csv')
-                df_t['65 and Over'] = (df_t['B01001_020E'] + df_t['B01001_021E'] + df_t['B01001_022E'] + df_t['B01001_023E'] + df_t['B01001_024E'] + df_t['B01001_025E'] + df_t['B01001_044E'] + df_t['B01001_045E'] + df_t['B01001_046E'] + df_t['B01001_047E'] + df_t['B01001_048E'] + df_t['B01001_049E']) / df_t['B01001_001E'] * 100
-                df_t.to_csv(base_dir + '\\' + location + '\\' + table + '_t.csv')
-                df2_t['Geocode'] = df_t['Geocode']
-                df2_t['Name'] = df_t['NAME']
-                df2_t['Total'] = df_t['B01001_001E']
-                df2_t['Percent 65 and Over'] = df_t['65 and Over']
-                df2_t.to_csv(base_dir + '\\' + location + '\\Title6_t.csv')
-                
-                df_b = pandas.read_csv(base_dir + '\\' + location + '\\' + table + '_b.csv')
-                df_b['65 and Over'] = (df_b['B01001_020E'] + df_b['B01001_021E'] + df_b['B01001_022E'] + df_b['B01001_023E'] + df_b['B01001_024E'] + df_b['B01001_025E'] + df_b['B01001_044E'] + df_b['B01001_045E'] + df_b['B01001_046E'] + df_b['B01001_047E'] + df_b['B01001_048E'] + df_b['B01001_049E']) / df_b['B01001_001E'] * 100
-                df_b.to_csv(base_dir + '\\' + location + '\\' + table + '_b.csv')
-                df2_b['Geocode'] = df_b['Geocode']
-                df2_b['Name'] = df_b['NAME']
-                df2_b['Total'] = df_b['B01001_001E']
-                df2_b['Percent 65 and Over'] = df_b['65 and Over']
-                df2_b.to_csv(base_dir + '\\' + location + '\\Title6_b.csv')
-                
-            elif table == 'B03002':
-                '''for frame in [df_t,df_b]:
-                    frame = pandas.read_csv(base_dir + '\\' + location + '\\' + table + '_t.csv')
-                    frame['Minority Percentage'] = (df_t['B03002_001E'] - df_t['B03002_003E']) / df_t['B03002_001E'] * 100'''
-                df_t = pandas.read_csv(base_dir + '\\' + location + '\\' + table + '_t.csv')                
-                df_t['Minority Percentage'] = (df_t['B03002_001E'] - df_t['B03002_003E']) / df_t['B03002_001E'] * 100
-                df_t.to_csv(base_dir + '\\' + location + '\\' + table + '_t.csv')
+    #if table == 'B01001':
+    for df_t in dfs:
+        #print(df_t.info())
+        #df_t = pandas.read_csv(base_dir + '\\' + location + '\\' + table + geo)
+        df_t['Percent 65 and Over'] = (df_t['B01001_020E'] + df_t['B01001_021E'] + df_t['B01001_022E'] +
+                                       df_t['B01001_023E'] + df_t['B01001_024E'] + df_t['B01001_025E'] +
+                                       df_t['B01001_044E'] + df_t['B01001_045E'] + df_t['B01001_046E'] +
+                                       df_t['B01001_047E'] + df_t['B01001_048E'] + df_t['B01001_049E']) / df_t['B01001_001E'] * 100
+        #df_t.to_csv(base_dir + '\\' + location + '\\' + table + geo)
+        #df2_t['Geocode'] = df_t['Geocode']
+        #df2_t['Name'] = df_t['NAME']
+        #df2_t['Total'] = df_t['B01001_001E']
+        #df2_t['Percent 65 and Over'] = df_t['65 and Over']
+        #df2_t.to_csv(base_dir + '\\' + location + '\\Title6'+geo)
 
-                df_b = pandas.read_csv(base_dir + '\\' + location + '\\' + table + '_b.csv')
-                df_b['Minority Percentage'] = (df_b['B03002_001E'] - df_b['B03002_003E']) / df_b['B03002_001E'] * 100
-                df_b.to_csv(base_dir + '\\' + location + '\\' + table + '_b.csv')
-                
-            elif table == 'B16004':
-                df_t = pandas.read_csv(base_dir + '\\' + location + '\\' + table + '_t.csv')                
-                df_t['Percent English Less than Very Well'] = (df_t['B16004_001E'] - (df_t['B16004_003E'] + df_t['B16004_005E'] + df_t['B16004_010E'] + df_t['B16004_015E'] + df_t['B16004_020E'] + df_t['B16004_025E'] + df_t['B16004_027E'] + df_t['B16004_032E'] + df_t['B16004_037E'] + df_t['B16004_042E'] + df_t['B16004_047E'] + df_t['B16004_049E'] + df_t['B16004_054E'] + df_t['B16004_059E'] + df_t['B16004_064E'])) / df_t['B16004_001E'] * 100
-                df_t.to_csv(base_dir + '\\' + location + '\\' + table + '_t.csv')
+                #df_b = pandas.read_csv(base_dir + '\\' + location + '\\' + table + '_b.csv')
+                #df_b['65 and Over'] = (df_b['B01001_020E'] + df_b['B01001_021E'] + df_b['B01001_022E'] + df_b['B01001_023E'] + df_b['B01001_024E'] + df_b['B01001_025E'] + df_b['B01001_044E'] + df_b['B01001_045E'] + df_b['B01001_046E'] + df_b['B01001_047E'] + df_b['B01001_048E'] + df_b['B01001_049E']) / df_b['B01001_001E'] * 100
+                #df_b.to_csv(base_dir + '\\' + location + '\\' + table + '_b.csv')
+                #df2_b['Geocode'] = df_b['Geocode']
+                #df2_b['Name'] = df_b['NAME']
+                #df2_b['Total'] = df_b['B01001_001E']
+                #df2_b['Percent 65 and Over'] = df_b['65 and Over']
+                #df2_b.to_csv(base_dir + '\\' + location + '\\Title6_b.csv')
 
-                df_b = pandas.read_csv(base_dir + '\\' + location + '\\' + table + '_b.csv')
-                df_b['Percent English Less than Very Well'] = (df_b['B16004_001E'] - (df_b['B16004_003E'] + df_b['B16004_005E'] + df_b['B16004_010E'] + df_b['B16004_015E'] + df_b['B16004_020E'] + df_b['B16004_025E'] + df_b['B16004_027E'] + df_b['B16004_032E'] + df_b['B16004_037E'] + df_b['B16004_042E'] + df_b['B16004_047E'] + df_b['B16004_049E'] + df_b['B16004_054E'] + df_b['B16004_059E'] + df_b['B16004_064E'])) / df_b['B16004_001E'] * 100
-                df_b.to_csv(base_dir + '\\' + location + '\\' + table + '_b.csv')
-                
-            elif table == 'B17017':
-                df_t = pandas.read_csv(base_dir + '\\' + location + '\\' + table + '_t.csv')
-                df_t['Household Poverty Percentage'] = df_t['B17017_002E'] / df_t['B17017_001E'] * 100
-                df_t.to_csv(base_dir + '\\' + location + '\\' + table + '_t.csv')
+        #elif table == 'B03002':
+        '''for frame in [df_t,df_b]:
+                frame = pandas.read_csv(base_dir + '\\' + location + '\\' + table + '_t.csv')
+                frame['Minority Percentage'] = (df_t['B03002_001E'] - df_t['B03002_003E']) / df_t['B03002_001E'] * 100'''
+            #df_t = pandas.read_csv(base_dir + '\\' + location + '\\' + table + '_t.csv')
+        df_t['Minority Percentage'] = (df_t['B03002_001E'] - df_t['B03002_003E']) / df_t['B03002_001E'] * 100
+            #df_t.to_csv(base_dir + '\\' + location + '\\' + table + '_t.csv')
 
-                df_b = pandas.read_csv(base_dir + '\\' + location + '\\' + table + '_b.csv')
-                df_b['Household Poverty Percentage'] = df_b['B17017_002E'] / df_b['B17017_001E'] * 100
-                df_b.to_csv(base_dir + '\\' + location + '\\' + table + '_b.csv')
-                
-            elif table == 'B18101':
-                df_t = pandas.read_csv(base_dir + '\\' + location + '\\' + table + '_t.csv')                
-                df_t['Percent with Disability'] = (df_t['B18101_004E'] + df_t['B18101_007E'] + df_t['B18101_010E'] + df_t['B18101_013E'] + df_t['B18101_016E'] + df_t['B18101_019E'] + df_t['B18101_023E'] + df_t['B18101_026E'] + df_t['B18101_029E'] + df_t['B18101_032E'] + df_t['B18101_035E'] + df_t['B18101_038E']) / df_t['B18101_001E'] * 100
-                df_t.to_csv(base_dir + '\\' + location + '\\' + table + '_t.csv')
-                # df2['Disability Rate']=df['Disability Rate']
-                # df2.to_csv(base_dir + '\\' + location + '\\Title6.csv')
-                # df_b = pandas.read_csv(base_dir + '\\' + location + '\\' + table + '_b.csv')
-                # df_b['Disability Rate']= (df_b['B18101_004E']+df_b['B18101_007E']+df_b['B18101_010E']+df_b['B18101_013E']+df_b['B18101_016E']+df_b['B18101_019E']+df_b['B18101_023E']+df_b['B18101_026E']+df_b['B18101_029E']+df_b['B18101_032E']+df_b['B18101_035E']+df_b['B18101_038E'])/df_b['B18101_001E']*100
-                # df_b.to_csv(base_dir + '\\' + location + '\\' + table + '_b.csv')
+            #df_b = pandas.read_csv(base_dir + '\\' + location + '\\' + table + '_b.csv')
+            #df_b['Minority Percentage'] = (df_b['B03002_001E'] - df_b['B03002_003E']) / df_b['B03002_001E'] * 100
+            #df_b.to_csv(base_dir + '\\' + location + '\\' + table + '_b.csv')
 
-            elif table == 'B25044':
-                df_t = pandas.read_csv(base_dir + '\\' + location + '\\' + table + '_t.csv')
-                df_t['No Car Household Percentage'] = (df_t['B25044_003E'] + df_t['B25044_010E']) / df_t['B25044_001E'] * 100
-                df_t.to_csv(base_dir + '\\' + location + '\\' + table + '_t.csv')
-                # df2['No Car Household Rate']=df['No Car Household Rate']
-                # df2.to_csv(base_dir + '\\' + location + '\\Title6.csv')
-                df_b = pandas.read_csv(base_dir + '\\' + location + '\\' + table + '_b.csv')
-                df_b['No Car Household Percentage'] = (df_b['B25044_003E'] + df_b['B25044_010E']) / df_b['B25044_001E'] * 100
-                df_b.to_csv(base_dir + '\\' + location + '\\' + table + '_b.csv')
+        #elif table == 'B16004':
+            #df_t = pandas.read_csv(base_dir + '\\' + location + '\\' + table + '_t.csv')
+        df_t['Percent English Less than Very Well'] = (df_t['B16004_001E'] - (df_t['B16004_003E'] + df_t['B16004_005E'] +
+                                                                              df_t['B16004_010E'] + df_t['B16004_015E'] +
+                                                                              df_t['B16004_020E'] + df_t['B16004_025E'] +
+                                                                              df_t['B16004_027E'] + df_t['B16004_032E'] +
+                                                                              df_t['B16004_037E'] + df_t['B16004_042E'] +
+                                                                              df_t['B16004_047E'] + df_t['B16004_049E'] +
+                                                                              df_t['B16004_054E'] + df_t['B16004_059E'] +
+                                                                              df_t['B16004_064E'])) / df_t['B16004_001E'] * 100
+            #df_t.to_csv(base_dir + '\\' + location + '\\' + table + '_t.csv')
 
-            
-            else: 
-                pass
-                  
-            
-        else:
-            if table not in not_available_via_api:
-                not_available_via_api.append(table)
-            print('      WARNING: Table ' + table + ' is not available via the API!')
+            #df_b = pandas.read_csv(base_dir + '\\' + location + '\\' + table + '_b.csv')
+            #df_b['Percent English Less than Very Well'] = (df_b['B16004_001E'] - (df_b['B16004_003E'] + df_b['B16004_005E'] + df_b['B16004_010E'] + df_b['B16004_015E'] + df_b['B16004_020E'] + df_b['B16004_025E'] + df_b['B16004_027E'] + df_b['B16004_032E'] + df_b['B16004_037E'] + df_b['B16004_042E'] + df_b['B16004_047E'] + df_b['B16004_049E'] + df_b['B16004_054E'] + df_b['B16004_059E'] + df_b['B16004_064E'])) / df_b['B16004_001E'] * 100
+            #df_b.to_csv(base_dir + '\\' + location + '\\' + table + '_b.csv')
+
+        #elif table == 'B17017':
+            #df_t = pandas.read_csv(base_dir + '\\' + location + '\\' + table + '_t.csv')
+        df_t['Household Poverty Percentage'] = df_t['B17017_002E'] / df_t['B17017_001E'] * 100
+            #df_t.to_csv(base_dir + '\\' + location + '\\' + table + '_t.csv')
+
+            #df_b = pandas.read_csv(base_dir + '\\' + location + '\\' + table + '_b.csv')
+            #df_b['Household Poverty Percentage'] = df_b['B17017_002E'] / df_b['B17017_001E'] * 100
+            #df_b.to_csv(base_dir + '\\' + location + '\\' + table + '_b.csv')
+
+        #elif table == 'B18101':
+            #df_t = pandas.read_csv(base_dir + '\\' + location + '\\' + table + '_t.csv')
+        df_t['Percent with Disability'] = (df_t['B18101_004E'] + df_t['B18101_007E'] + df_t['B18101_010E'] +
+                                           df_t['B18101_013E'] + df_t['B18101_016E'] + df_t['B18101_019E'] +
+                                           df_t['B18101_023E'] + df_t['B18101_026E'] + df_t['B18101_029E'] +
+                                           df_t['B18101_032E'] + df_t['B18101_035E'] + df_t['B18101_038E']) / df_t['B18101_001E'] * 100
+            #df_t.to_csv(base_dir + '\\' + location + '\\' + table + '_t.csv')
+            # df2['Disability Rate']=df['Disability Rate']
+            # df2.to_csv(base_dir + '\\' + location + '\\Title6.csv')
+            # df_b = pandas.read_csv(base_dir + '\\' + location + '\\' + table + '_b.csv')
+            # df_b['Disability Rate']= (df_b['B18101_004E']+df_b['B18101_007E']+df_b['B18101_010E']+df_b['B18101_013E']+df_b['B18101_016E']+df_b['B18101_019E']+df_b['B18101_023E']+df_b['B18101_026E']+df_b['B18101_029E']+df_b['B18101_032E']+df_b['B18101_035E']+df_b['B18101_038E'])/df_b['B18101_001E']*100
+            # df_b.to_csv(base_dir + '\\' + location + '\\' + table + '_b.csv')
+
+        #elif table == 'B25044':
+         #   df_t = pandas.read_csv(base_dir + '\\' + location + '\\' + table + '_t.csv')
+        df_t['No Car Household Percentage'] = (df_t['B25044_003E'] + df_t['B25044_010E']) / df_t['B25044_001E'] * 100
+        #    df_t.to_csv(base_dir + '\\' + location + '\\' + table + '_t.csv')
+            # df2['No Car Household Rate']=df['No Car Household Rate']
+            # df2.to_csv(base_dir + '\\' + location + '\\Title6.csv')
+         #   df_b = pandas.read_csv(base_dir + '\\' + location + '\\' + table + '_b.csv')
+          #  df_b['No Car Household Percentage'] = (df_b['B25044_003E'] + df_b['B25044_010E']) / df_b['B25044_001E'] * 100
+           # df_b.to_csv(base_dir + '\\' + location + '\\' + table + '_b.csv')
+
+
+        #else:
+         #   pass
+
+
+    #else:
+        #if table not in not_available_via_api:
+        #    not_available_via_api.append(table)
+        #print('      WARNING: Table ' + table + ' is not available via the API!')
     print('  Assembling Title6 Stats...'), 
     # for census tracts
-    csv_path2 = base_dir + '\\' + location 
-    df0t = pandas.read_csv(os.path.join(csv_path2, 'Title6_t.csv'))
+
+    csv_path2 = base_dir + '\\' + location
+    #dfs[1].to_csv(os.path.join(csv_path2, 'Title6_t.csv'))
+    '''df0t = pandas.read_csv(os.path.join(csv_path2, 'Title6_t.csv'))
     df1t = pandas.read_csv(os.path.join(csv_path2, 'B01001_t.csv'))  # for x in range(0,len(api_pull)):
     df2t = pandas.read_csv(os.path.join(csv_path2, 'B03002_t.csv'))  # df[x]=pandas.read_csv(os.path.join(csv_path2,"'"+variable_list[x]+'_t.csv')
     df3t = pandas.read_csv(os.path.join(csv_path2, 'B16004_t.csv'))
@@ -146,12 +163,13 @@ for location in api_pull:
     df0t['Median Household Income'] = df6t['B19013_001E']
     df0t['No Car Household Percentage'] = df7t['No Car Household Percentage']
 
-    df0t.to_csv(csv_path2 + '\\Title6_t.csv')
+    df0t.to_csv(csv_path2 + '\\Title6_t.csv')'''
     # for block groups
+    #dfs[0].to_csv(os.path.join(csv_path2,'Title6_b.csv'))
     #for file in csv_path2:
      #   for i in range(0,7,1):
       #      df + i + b = pandas.read_csv(os.path.join(csv_path2,file))
-    df0b = pandas.read_csv(os.path.join(csv_path2, 'Title6_b.csv'))
+    '''df0b = pandas.read_csv(os.path.join(csv_path2, 'Title6_b.csv'))
     df1b = pandas.read_csv(os.path.join(csv_path2, 'B01001_b.csv'))
     df2b = pandas.read_csv(os.path.join(csv_path2, 'B03002_b.csv'))
     df3b = pandas.read_csv(os.path.join(csv_path2, 'B16004_b.csv'))
@@ -169,19 +187,37 @@ for location in api_pull:
     df0b['Median Household Income'] = df6b['B19013_001E']
     df0b['No Car Household Percentage'] = df7b['No Car Household Percentage']
 
-    df0b.to_csv(csv_path2 + '\\Title6_b.csv')
+    df0b.to_csv(csv_path2 + '\\Title6_b.csv')'''
     print('\bDone')
     print('  Appending Title 6 Stats...'),
     # csv_path = base_dir + '\\' + location + '\\Title6.csv'
 
-    df00t = pandas.read_csv(csv_path2 + '\\Title6_t.csv')
+    df00t = dfs[1] #pandas.read_csv(csv_path2 + '\\Title6_t.csv')
     counties_t = counties_t.append(df00t)
     counties_t.to_csv(base_dir + '\\Title6_t.csv')
     # for block groups
-    df00b = pandas.read_csv(csv_path2 +'\\Title6_b.csv')
+    df00b = dfs[0] #pandas.read_csv(csv_path2 +'\\Title6_b.csv')
     counties_b = counties_b.append(df00b)
     counties_b.to_csv(base_dir + '\\Title6_b.csv')
     print('\bDone')
+print(' Determining EJ Areas ... ')
+counties_b['ej'] = 'neither'
+print(counties_b)
+#filter to planning area to calculate the averages
+
+lw_filter = counties_b['Geocode'].str[:5].isin(['39095','39173'])
+m_filter = counties_b['Geocode'].str[:8] == '26115833'
+
+lmw_b = counties_b.loc[lw_filter | m_filter,['B03002_001E','B03002_003E']]
+overall_poc = (sum(lmw_b['B03002_001E']) - sum(lmw_b['B03002_003E'])) / sum(lmw_b['B03002_001E']) * 100
+print(overall_poc)
+
+low_income = counties_b['B19013_001E'] < poverty_level
+poc = counties_b['Minority Percentage'] > overall_poc
+counties_b.loc[low_income,'ej'] = 'low income'
+counties_b.loc[poc,'ej'] = 'people of color'
+counties_b.loc[low_income & poc, 'ej'] = 'both'
+counties_b.to_csv(base_dir + '\\Title6_b.csv')
 
 spatialize(base_dir)
 # This section joins tables to respective geographies
