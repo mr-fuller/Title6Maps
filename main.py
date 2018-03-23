@@ -110,12 +110,18 @@ m_filter = counties_b['Geocode'].str[:8] == '26115833'
 lmw_b = counties_b.loc[lw_filter | m_filter,['B03002_001E','B03002_003E']]
 overall_poc = (sum(lmw_b['B03002_001E']) - sum(lmw_b['B03002_003E'])) / sum(lmw_b['B03002_001E']) * 100
 print(overall_poc)
-
+# income has to be greater than zero to catch bad data
 low_income = counties_b['B19013_001E'] < poverty_level
+income = counties_b['B19013_001E'] > 0
+no_income = counties_b['B19013_001E'] < 0
+
 poc = counties_b['Minority Percentage'] > overall_poc
-counties_b.loc[low_income,'ej'] = 'low income'
+counties_b.loc[low_income & income,'ej'] = 'low income'
+counties_b.loc[no_income, 'ej'] = 'no data'
 counties_b.loc[poc,'ej'] = 'people of color'
-counties_b.loc[low_income & poc, 'ej'] = 'both'
+counties_b.loc[low_income & income & poc, 'ej'] = 'both'
+
+
 counties_b.to_csv(base_dir + '\\Title6_b.csv')
 
 # This section joins tables to respective geographies
