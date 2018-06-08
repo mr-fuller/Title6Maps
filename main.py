@@ -13,6 +13,7 @@ from builddirectory import builddirectory
 from buildacsdict import buildacsdict
 from downloadandsave import download_and_save_data
 from spatialize import spatialize
+from pip_summary import pip_summary
 from datetime import datetime
 start_time = datetime.now()
 
@@ -100,7 +101,7 @@ for location in api_pull:
 # Determine EJ status of block groups
 print(' Determining EJ Areas ... ')
 counties_b['ej'] = 'neither'
-print(counties_b)
+#print(counties_b)
 
 #filter to planning area to calculate the averages
 
@@ -123,9 +124,9 @@ counties_b.loc[low_income & income & poc, 'ej'] = 'both'
 
 
 counties_b.to_csv(base_dir + '\\Title6_b.csv')
-
+pip_summary(counties_t)
 # This section joins tables to respective geographies
-spatialize(base_dir)
+# spatialize(base_dir)
 
 # manipulate layers to display data
 
