@@ -1,5 +1,6 @@
 import pandas as pd
 import os
+import requests
 from variables import api_key, api_pull
 
 
@@ -26,8 +27,8 @@ def download_and_save_data(acs_dict, fips, location, api_key, api_url_base, base
         # Pull all Census Tracts in the TMACOG Planning Area
         api_url = api_url_base + get_string + '&for=tract:*&in=state:' + fips[location][:2] + \
                   '+county:' + fips[location][2:] + '&key=' + api_key
-        #print(api_url)
-        tract_data = pd.io.json.read_json(api_url)
+        print(api_url)
+        tract_data = pd.DataFrame(requests.get(api_url).json())
         tract_data.columns = tract_data[:1].values.tolist()  # Rename columns based on first row
         tract_data['Geocode'] = tract_data['state'] + tract_data['county'] + tract_data['tract']
         tract_data = tract_data[1:]  # Drop first row
@@ -36,7 +37,7 @@ def download_and_save_data(acs_dict, fips, location, api_key, api_url_base, base
         api_url = api_url_base + get_string + '&for=block+group:*&in=state:' + fips[location][:2] + '+county:' + fips[
                                                                                                                      location][
                                                                                                                  2:] + '&key=' + api_key
-        block_group_data = pd.io.json.read_json(api_url)
+        block_group_data = pd.DataFrame(requests.get(api_url).json())
         block_group_data.columns = block_group_data[:1].values.tolist()  # Rename columns based on first row
         block_group_data['Geocode'] = block_group_data['state'] + block_group_data['county'] + block_group_data[
             'tract'] + block_group_data['block group']
