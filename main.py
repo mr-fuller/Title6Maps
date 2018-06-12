@@ -13,7 +13,8 @@ from builddirectory import builddirectory
 from buildacsdict import buildacsdict
 from downloadandsave import download_and_save_data
 from spatialize import spatialize
-from pip_summary import pip_summary
+from pip_summary import summarize_region
+from tip_summary import tip_summary
 from datetime import datetime
 start_time = datetime.now()
 
@@ -65,6 +66,7 @@ for location in api_pull:
                                                                               df_t['B16004_064E'])) / df_t['B16004_001E'] * 100
 
         df_t['Household Poverty Percentage'] = df_t['B17017_002E'] / df_t['B17017_001E'] * 100
+        df_t['Individual Poverty Percentage'] = df_t['B17001_002E']/ df_t['B17001_001E'] * 100
 
         df_t['Percent with Disability'] = (df_t['B18101_004E'] + df_t['B18101_007E'] + df_t['B18101_010E'] +
                                            df_t['B18101_013E'] + df_t['B18101_016E'] + df_t['B18101_019E'] +
@@ -100,31 +102,33 @@ for location in api_pull:
 
 # Determine EJ status of block groups
 print(' Determining EJ Areas ... ')
-counties_b['ej'] = 'neither'
-#print(counties_b)
-
-#filter to planning area to calculate the averages
-
-lw_filter = counties_b['Geocode'].str[:5].isin(['39095','39173'])
-m_filter = counties_b['Geocode'].str[:8] == '26115833'
-
-lmw_b = counties_b.loc[lw_filter | m_filter,['B03002_001E','B03002_003E']]
-overall_poc = (sum(lmw_b['B03002_001E']) - sum(lmw_b['B03002_003E'])) / sum(lmw_b['B03002_001E']) * 100
-print(overall_poc)
-# income has to be greater than zero to catch bad data
-low_income = counties_b['B19013_001E'] < poverty_level
-income = counties_b['B19013_001E'] > 0
-no_income = counties_b['B19013_001E'] < 0
-
-poc = counties_b['Minority Percentage'] > overall_poc
-counties_b.loc[low_income & income,'ej'] = 'low income'
-counties_b.loc[no_income, 'ej'] = 'no data'
-counties_b.loc[poc,'ej'] = 'people of color'
-counties_b.loc[low_income & income & poc, 'ej'] = 'both'
-
-
-counties_b.to_csv(base_dir + '\\Title6_b.csv')
-pip_summary(counties_t)
+# tip_summary(counties_b,base_dir)
+# counties_b['ej'] = 'neither'
+# #print(counties_b)
+#
+# #filter to planning area to calculate the averages
+#
+# lw_filter = counties_b['Geocode'].str[:5].isin(['39095','39173'])
+# m_filter = counties_b['Geocode'].str[:8] == '26115833'
+#
+# lmw_b = counties_b.loc[lw_filter | m_filter,['B03002_001E','B03002_003E']]
+# overall_poc = (sum(lmw_b['B03002_001E']) - sum(lmw_b['B03002_003E'])) / sum(lmw_b['B03002_001E']) * 100
+# print(overall_poc)
+# # income has to be greater than zero to catch bad data
+# low_income = counties_b['B19013_001E'] < poverty_level
+# income = counties_b['B19013_001E'] > 0
+# no_income = counties_b['B19013_001E'] < 0
+#
+# poc = counties_b['Minority Percentage'] > overall_poc
+# counties_b.loc[low_income & income,'ej'] = 'low income'
+# counties_b.loc[no_income, 'ej'] = 'no data'
+# counties_b.loc[poc,'ej'] = 'people of color'
+# counties_b.loc[low_income & income & poc, 'ej'] = 'both'
+#
+#
+# counties_b.to_csv(base_dir + '\\Title6_b.csv')
+summarize_region(counties_b,counties_t,base_dir)
+# pip_summary(counties_b,counties_t,base_dir,'pip')
 # This section joins tables to respective geographies
 # spatialize(base_dir)
 
