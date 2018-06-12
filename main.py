@@ -10,19 +10,19 @@ import os
 import pandas as pd
 from variables import year_int,api_pull,api_key,fips, variable_list, poverty_level
 from builddirectory import builddirectory
-from buildacsdict import buildacsdict
+# from buildacsdict import buildacsdict
 from downloadandsave import download_and_save_data
 from spatialize import spatialize
 from pip_summary import summarize_region
-from tip_summary import tip_summary
+
 from datetime import datetime
 start_time = datetime.now()
 
 
 base_dir = builddirectory()
 
-acs_dict = buildacsdict()[0]
-table_list = buildacsdict()[1]
+# acs_dict = buildacsdict()[0]
+# table_list = buildacsdict()[1]
 ##
 # DOWNLOAD ACS DATA
 ##
@@ -39,9 +39,9 @@ for location in api_pull:
     #for table in api_pull[location]:
     #j += 1
     #print('      Table (' + str(j) + ' of ' + str(len(api_pull[location])) + ')')
-    api_url_base = 'http://api.census.gov/data/' + str(year_int) + '/acs/acs5?get=NAME'
+    # api_url_base = 'http://api.census.gov/data/' + str(year_int) + '/acs/acs5?get=NAME'
     #if table in table_list:
-    dfs = download_and_save_data(variable_list, fips, location, api_key, api_url_base, base_dir)
+    dfs = download_and_save_data(variable_list, fips, location, api_key, base_dir)
     df2_t = pd.DataFrame()
     df2_b = pd.DataFrame()
 
@@ -66,7 +66,7 @@ for location in api_pull:
                                                                               df_t['B16004_064E'])) / df_t['B16004_001E'] * 100
 
         df_t['Household Poverty Percentage'] = df_t['B17017_002E'] / df_t['B17017_001E'] * 100
-        df_t['Individual Poverty Percentage'] = df_t['B17001_002E']/ df_t['B17001_001E'] * 100
+        df_t['Individual Poverty Percentage'] = df_t['B17001_002E'] / df_t['B17001_001E'] * 100
 
         df_t['Percent with Disability'] = (df_t['B18101_004E'] + df_t['B18101_007E'] + df_t['B18101_010E'] +
                                            df_t['B18101_013E'] + df_t['B18101_016E'] + df_t['B18101_019E'] +
@@ -93,11 +93,11 @@ for location in api_pull:
 
     df00t = dfs[1] #pandas.read_csv(csv_path2 + '\\Title6_t.csv')
     counties_t = counties_t.append(df00t)
-    counties_t.to_csv(base_dir + '\\Title6_t.csv')
+    # counties_t.to_csv(base_dir + '\\Title6_t.csv')
     # for block groups
     df00b = dfs[0] #pandas.read_csv(csv_path2 +'\\Title6_b.csv')
     counties_b = counties_b.append(df00b)
-    counties_b.to_csv(base_dir + '\\Title6_b.csv')
+    # counties_b.to_csv(base_dir + '\\Title6_b.csv')
     print('\bDone')
 
 # Determine EJ status of block groups
