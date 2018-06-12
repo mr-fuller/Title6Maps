@@ -4,7 +4,7 @@ from census import Census
 from variables import api_key, fips,variable_list
 
 # input a list of counties, Lucas, Monroe, and Wood by default
-def calculate_regional_rates(counties=['Lucas','Monroe','Wood']):
+def calculate_regional_rates(counties):
     flds = ['GEO_ID','NAME'] + variable_list
     # counties = ['Lucas','Ottawa','Monroe','Sandusky','Wood']
     filtered_dict = {county:fips[county] for county in counties}
