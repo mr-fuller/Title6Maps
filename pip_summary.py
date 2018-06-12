@@ -1,71 +1,66 @@
 # Calculate summary/overall stats for Public Involvement Process document updates
+# the study area includes Lucas, Wood, Ottawa, and Sandusky counties as well as the
+# southern portion of Monroe county
 import pandas as pd
+from calculate_regional_rates import calculate_regional_rates
+from variables import poverty_level
+from collections import namedtuple
 
-def pip_summary(counties_b):
-    losw_filter = counties_b['Geocode'].str[:5].isin(['39095','39123','39143','39173'])
-    m_filter = counties_b['Geocode'].str[:8] == '26115833'
+def summarize_region(counties_b, counties_t, base_dir):
+    geotuple = namedtuple('geotuple',['b','t'])
+    dfs = geotuple(counties_b,counties_t)
+    counties = ['Lucas', 'Monroe', 'Wood']
+    for doc, study_area in {'pip': counties +['Ottawa', 'Sandusky'], 'tip': counties}.items():
+        region_rates = calculate_regional_rates(study_area)
+        # determine ej status for TIP and PIP study areas in the same data set
+        for fld in dfs._fields:
+            item = getattr(dfs,fld)
+            item[doc +'_ej'] = 'neither'
+            # income has to be greater than zero to catch bad data
+            low_income = item['B19013_001E'] < poverty_level
+            income = item['B19013_001E'] > 0
+            no_income = item['B19013_001E'] < 0
 
-    lmosw_b = counties_b.loc[losw_filter | m_filter,]
+            poc = item['Minority Percentage'] > region_rates[8]
+            item.loc[low_income & income,doc + '_ej'] = 'low income'
+            item.loc[no_income, doc + '_ej'] = 'no data'
+            item.loc[poc,doc + '_ej'] = 'people of color'
+            item.loc[low_income & income & poc, doc + '_ej'] = 'both'
+            item.to_csv(base_dir + '\\Title6_' + fld + '.csv')
+        # but the summary table only needs to happen at the document level
+        dict = {'Environmental Justice Group':['Regional Count','Regional Percent'],
+                'Minority':[region_rates[8],region_rates[0]],
+                'Low Income':[region_rates[9],region_rates[1]],
+                'Age 65 and Older':[region_rates[11],region_rates[2]],
+                'Disabled':[region_rates[12],region_rates[3]],
+                'Zero Car':[region_rates[13],region_rates[4]],
+                'Limited English Proficiency':[region_rates[14],region_rates[5]],
+                'Median Income':['','N/A'],
+                'Total Population Estimate':[region_rates[6],region_rates[6]/region_rates[6]*100],
+                'Total Households':[region_rates[7],region_rates[7]/region_rates[7]*100],
+                'Population of non-institutionalized civilians':['',''],
+                'Population for Whom Poverty Status is Determined':[region_rates[10],region_rates[10]/region_rates[10]*100]
+                }
+        df = pd.DataFrame(dict).transpose()
+        df=df.reindex(index=['Environmental Justice Group',
+                'Minority',
+                'Low Income',
+                'Age 65 and Older',
+                'Disabled',
+                'Zero Car',
+                'Limited English Proficiency',
+                'Median Income',
+                'Total Population Estimate',
+                'Total Households',
+                'Population of non-institutionalized civilians',
+                'Population for Whom Poverty Status is Determined'])
+        print(df)
+        # does it make sense to create separate spreadsheets for each document?
+        writer = pd.ExcelWriter(base_dir + '\\' + doc +'_summary_tables.xlsx', engine='xlsxwriter')
+        df.to_excel(writer,doc)
+        writer.save()
+        writer.close()
 
-    total_pop_est = sum(lmosw_b['B03002_001E'])
-    total_hhs_est = sum(lmosw_b['B25044_001E'])
-    total_poc_est = (sum(lmosw_b['B03002_001E']) - sum(lmosw_b['B03002_003E']))
-    total_pov_est = sum(lmosw_b['B17001_002E'])
-    total_pov_pop_est = sum(lmosw_b['B17001_001E'])
-    total_old_est = sum(lmosw_b['B01001_020E']+lmosw_b['B01001_021E']+lmosw_b['B01001_022E']+
-                 lmosw_b['B01001_023E']+lmosw_b['B01001_024E']+lmosw_b['B01001_025E']+
-                 lmosw_b['B01001_044E']+lmosw_b['B01001_045E']+lmosw_b['B01001_046E']+
-                 lmosw_b['B01001_047E']+lmosw_b['B01001_048E']+lmosw_b['B01001_049E'])
-    total_disabled_est = sum(lmosw_b['B18101_004E']+lmosw_b['B18101_007E']+lmosw_b['B18101_010E']+lmosw_b['B18101_013E']+
-                 lmosw_b['B18101_016E']+lmosw_b['B18101_019E']+lmosw_b['B18101_023E']+lmosw_b['B18101_026E']+
-                 lmosw_b['B18101_029E']+lmosw_b['B18101_032E']+lmosw_b['B18101_035E']+lmosw_b['B18101_038E'])
-    total_nocar_est = sum(lmosw_b['B25044_003E']) + sum(lmosw_b['B25044_010E'])
-    total_lep_est = sum(lmosw_b['B16004_001E'])-sum(lmosw_b['B16004_003E']+lmosw_b['B16004_005E']+lmosw_b['B16004_010E']+
-                 lmosw_b['B16004_015E']+lmosw_b['B16004_020E']+lmosw_b['B16004_025E']+lmosw_b['B16004_027E']+
-                 lmosw_b['B16004_032E']+lmosw_b['B16004_037E']+lmosw_b['B16004_042E']+lmosw_b['B16004_047E']+
-                 lmosw_b['B16004_049E']+lmosw_b['B16004_054E']+lmosw_b['B16004_059E']+lmosw_b['B16004_064E'])
-    # median_income = (lmosw_b['B19013_001E']*lmosw_b['B03002_001E'])
-    dict = {'Environmental Justice Group':['Regional Count','Regional Percent'],
-            'Minority':[total_poc_est,total_poc_est/total_pop_est*100],
-            'Low Income':[total_pov_est,total_pov_est/total_pov_pop_est*100],
-            'Age 65 and Older':[total_old_est,total_old_est/total_pop_est*100],
-            'Disabled':[total_disabled_est,total_disabled_est/total_pop_est*100],
-            'Zero Car':[total_nocar_est,total_nocar_est/total_hhs_est*100],
-            'Limited English Proficiency':[total_lep_est,total_lep_est/total_pop_est*100],
-            'Median Income':['','N/A'],
-            'Total Population Estimate':[total_pop_est,total_pop_est/total_pop_est*100],
-            'Total Households':[total_hhs_est,total_hhs_est/total_hhs_est*100],
-            'Population of non-institutionalized civilians':['',''],
-            'Population for Whom Poverty Status is Determined':[total_pov_pop_est,total_pov_pop_est/total_pov_pop_est*100]
-            }
-    df = pd.DataFrame(dict).transpose()
-    df=df.reindex(index=['Environmental Justice Group',
-            'Minority',
-            'Low Income',
-            'Age 65 and Older',
-            'Disabled',
-            'Zero Car',
-            'Limited English Proficiency',
-            'Median Income',
-            'Total Population Estimate',
-            'Total Households',
-            'Population of non-institutionalized civilians',
-            'Population for Whom Poverty Status is Determined'])
-    print(df)
-    writer = pd.ExcelWriter('C:/Users/fullerm/Desktop/pip_summary_table.xlsx',engine='xlsxwriter')
-    df.to_excel(writer)
-    # overall_poc =  total_poc_est/ sum(lmosw_b['B03002_001E']) * 100
-    # print(overall_poc)
-    # income has to be greater than zero to catch bad data
-    # low_income = counties_b['B19013_001E'] < poverty_level
-    # income = counties_b['B19013_001E'] > 0
-    # no_income = counties_b['B19013_001E'] < 0
-    #
-    # poc = counties_b['Minority Percentage'] > overall_poc
-    # counties_b.loc[low_income & income,'ej'] = 'low income'
-    # counties_b.loc[no_income, 'ej'] = 'no data'
-    # counties_b.loc[poc,'ej'] = 'people of color'
-    # counties_b.loc[low_income & income & poc, 'ej'] = 'both'
 
 if __name__ == "__main__":
-    pip_summary()
+    summarize_region()
