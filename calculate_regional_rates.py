@@ -26,8 +26,8 @@ def calculate_regional_rates(counties):
     total_pop_est = sum(df['B03002_001E'])
     total_hhs_est = sum(df['B25044_001E'])
     total_poc_est = (sum(df['B03002_001E']) - sum(df['B03002_003E']))
-    total_pov_est = sum(df['B17001_002E'])
-    total_pov_pop_est = sum(df['B17001_001E'])
+    total_pov_est = sum(df['B17021_002E'])
+    total_pov_pop_est = sum(df['B17021_001E'])
     total_old_est = sum(df['B01001_020E'] + df['B01001_021E'] + df['B01001_022E'] + df['B01001_023E'] +
                         df['B01001_024E'] + df['B01001_025E'] + df['B01001_044E'] + df['B01001_045E'] +
                         df['B01001_046E'] + df['B01001_047E'] + df['B01001_048E'] + df['B01001_049E'])

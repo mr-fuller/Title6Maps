@@ -3,7 +3,7 @@ from datetime import datetime
 api_key = 'b7da053b9e664586b9e559dba9e73780602f0aab'  # CGR's API key
 year_int = datetime.now().year - 2
 
-#HHS value for a family of four for 2016, THIS has to be updated annually
+#HHS value for a family of four for 2016, THIS has to be updated annually; can i scrape this value?
 poverty_level = 24300
 
 fips = {
@@ -39,7 +39,7 @@ variable_list = [#'B18101',  # The table number for disability information
                  'B18101_016E','B18101_019E','B18101_023E','B18101_026E',
                  'B18101_029E','B18101_032E','B18101_035E','B18101_038E','B18101_001E',
                  #poverty
-                 'B17017_002E','B17017_001E','B17001_001E','B17001_002E',
+                 'B17017_002E','B17017_001E','B17021_001E','B17021_002E',
                  #esl
                  'B16004_001E','B16004_003E','B16004_005E','B16004_010E',
                  'B16004_015E','B16004_020E','B16004_025E','B16004_027E',

@@ -66,7 +66,7 @@ for location in api_pull:
                                                                               df_t['B16004_064E'])) / df_t['B16004_001E'] * 100
 
         df_t['Household Poverty Percentage'] = df_t['B17017_002E'] / df_t['B17017_001E'] * 100
-        df_t['Individual Poverty Percentage'] = df_t['B17001_002E'] / df_t['B17001_001E'] * 100
+        df_t['Individual Poverty Percentage'] = df_t['B17021_002E'] / df_t['B17021_001E'] * 100
 
         df_t['Percent with Disability'] = (df_t['B18101_004E'] + df_t['B18101_007E'] + df_t['B18101_010E'] +
                                            df_t['B18101_013E'] + df_t['B18101_016E'] + df_t['B18101_019E'] +
