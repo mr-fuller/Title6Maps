@@ -10,7 +10,7 @@ import os
 import pandas as pd
 from variables import year_int,api_pull,api_key,fips, variable_list, poverty_level
 from builddirectory import builddirectory
-# from buildacsdict import buildacsdict
+from buildacsdict import buildacsdict
 from downloadandsave import download_and_save_data
 from spatialize import spatialize
 from pip_summary import summarize_region
@@ -35,12 +35,12 @@ counties_b = pd.DataFrame()
 for location in api_pull:
     i += 1
     print('    '+location+' (Location '+str(i)+' of '+str(len(api_pull))+')')
-    #j = 0
-    #for table in api_pull[location]:
-    #j += 1
-    #print('      Table (' + str(j) + ' of ' + str(len(api_pull[location])) + ')')
+    # j = 0
+    # for table in api_pull[location]:
+        # j += 1
+        # print('      Table (' + str(j) + ' of ' + str(len(api_pull[location])) + ')')
     # api_url_base = 'http://api.census.gov/data/' + str(year_int) + '/acs/acs5?get=NAME'
-    #if table in table_list:
+    # if table in table_list:
     dfs = download_and_save_data(variable_list, fips, location, api_key, base_dir)
     df2_t = pd.DataFrame()
     df2_b = pd.DataFrame()
@@ -75,17 +75,17 @@ for location in api_pull:
 
         df_t['No Car Household Percentage'] = (df_t['B25044_003E'] + df_t['B25044_010E']) / df_t['B25044_001E'] * 100
 
-    print('  Assembling Title6 Stats...'), 
+    print('  Assembling Title6 Stats...'),
     # for census tracts
 
     csv_path2 = base_dir + '\\' + location
-    #dfs[1].to_csv(os.path.join(csv_path2, 'Title6_t.csv'))
+        #dfs[1].to_csv(os.path.join(csv_path2, 'Title6_t.csv'))
 
-    # for block groups
-    #dfs[0].to_csv(os.path.join(csv_path2,'Title6_b.csv'))
-    #for file in csv_path2:
-     #   for i in range(0,7,1):
-      #      df + i + b = pandas.read_csv(os.path.join(csv_path2,file))
+        # for block groups
+        #dfs[0].to_csv(os.path.join(csv_path2,'Title6_b.csv'))
+        #for file in csv_path2:
+         #   for i in range(0,7,1):
+          #      df + i + b = pandas.read_csv(os.path.join(csv_path2,file))
 
     print('\bDone')
     print('  Appending Title 6 Stats...'),
@@ -130,7 +130,7 @@ print(' Determining EJ Areas ... ')
 summarize_region(counties_b,counties_t,base_dir)
 # pip_summary(counties_b,counties_t,base_dir,'pip')
 # This section joins tables to respective geographies
-# spatialize(base_dir)
+spatialize(base_dir)
 
 # manipulate layers to display data
 
