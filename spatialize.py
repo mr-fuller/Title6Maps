@@ -1,5 +1,5 @@
 # This section joins tables to respective geographies
-import arcpy
+import gdal
 from datetime import datetime
 
 # , os
@@ -11,7 +11,7 @@ def spatialize(base_dir,):
 
     arcpy.env.overwriteOutput = True
 
-    print('  Preparing data in ArcMap...'),
+    print('  Preparing spatially referenced layers...'),
 
     TimeDate = datetime.now()
     TimeDateStr = "Title6" + TimeDate.strftime('%Y%m%d%H%M')
