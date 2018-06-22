@@ -29,7 +29,7 @@ variable_list = [#'B18101',  # The table number for disability information
                  #'B25044',  # table with info on no-car households
                  #'B19013'   # table with median income estimates
                  
-                 
+                 'GEO_ID','NAME',
                  #no car households
                  'B25044_003E','B25044_010E','B25044_001E',
                  #median income
@@ -62,7 +62,7 @@ api_pull = {}
 for x in range(0, len(counties)):
     api_pull[counties[x]] = variable_list
 
-print(api_pull)
+# print(api_pull)
 
 #if __name__ == '__main__':
     #variables()

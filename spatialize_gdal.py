@@ -21,12 +21,12 @@ def spatialize_gdal(base_dir):
 
     df = pd.read_csv(base_dir+'/Title6_t.csv')
     df.columns = [c.lower() for c in df.columns]
-    df.to_sql('tract_data',engine, if_exists='replace')
+    df.to_sql('tract_acs_2016',engine, if_exists='replace')
 
     # engine = create_engine('postgresql://postgres:laskdjfhiweiofoies@localhost:5432/title6')
     df_bg = pd.read_csv(base_dir+'/Title6_b.csv')
     df_bg.columns = [c.lower() for c in df_bg.columns]
-    df_bg.to_sql('block_group', con=engine,if_exists='replace')
+    df_bg.to_sql('block_group_acs_2016', con=engine,if_exists='replace')
     # arcpy.env.overwriteOutput = True
     # conn = psycopg2.connect(database='title6',user='postgres',password='laskdjfhiweiofoies')
     # cur = conn.cursor()

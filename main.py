@@ -47,7 +47,7 @@ for location in api_pull:
 
     #if table == 'B01001':
     for df_t in dfs:
-        #print(df_t.info())
+        print(df_t)
         #df_t = pandas.read_csv(base_dir + '\\' + location + '\\' + table + geo)
         df_t['Percent 65 and Over'] = (df_t['B01001_020E'] + df_t['B01001_021E'] + df_t['B01001_022E'] +
                                        df_t['B01001_023E'] + df_t['B01001_024E'] + df_t['B01001_025E'] +
@@ -74,7 +74,7 @@ for location in api_pull:
                                            df_t['B18101_032E'] + df_t['B18101_035E'] + df_t['B18101_038E']) / df_t['B18101_001E'] * 100
 
         df_t['No Car Household Percentage'] = (df_t['B25044_003E'] + df_t['B25044_010E']) / df_t['B25044_001E'] * 100
-
+        df_t.set_index('NAME',inplace=True)
     print('  Assembling Title6 Stats...'),
     # for census tracts
 
@@ -93,11 +93,11 @@ for location in api_pull:
 
     df00t = dfs[1] #pandas.read_csv(csv_path2 + '\\Title6_t.csv')
     counties_t = counties_t.append(df00t)
-    # counties_t.to_csv(base_dir + '\\Title6_t.csv')
+    counties_t.to_csv(base_dir + '\\Title6_t.csv')
     # for block groups
     df00b = dfs[0] #pandas.read_csv(csv_path2 +'\\Title6_b.csv')
     counties_b = counties_b.append(df00b)
-    # counties_b.to_csv(base_dir + '\\Title6_b.csv')
+    counties_b.to_csv(base_dir + '\\Title6_b.csv')
     print('\bDone')
 
 # Determine EJ status of block groups
@@ -130,7 +130,7 @@ print(' Determining EJ Areas ... ')
 summarize_region(counties_b,counties_t,base_dir)
 # pip_summary(counties_b,counties_t,base_dir,'pip')
 # This section joins tables to respective geographies
-spatialize(base_dir)
+# spatialize(base_dir)
 
 # manipulate layers to display data
 
