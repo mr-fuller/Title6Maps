@@ -34,6 +34,8 @@ variable_list = [#'B18101',  # The table number for disability information
                  'B25044_003E','B25044_010E','B25044_001E',
                  #median income
                  'B19013_001E',
+                 # median age
+                 'B01002_001E',
                  #disability
                  'B18101_004E','B18101_007E','B18101_010E','B18101_013E',
                  'B18101_016E','B18101_019E','B18101_023E','B18101_026E',
