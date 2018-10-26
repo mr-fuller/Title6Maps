@@ -57,7 +57,7 @@ def summarize_region(counties_b, counties_t, base_dir):
                 'Population for Whom Poverty Status is Determined'])
         print(df)
         # does it make sense to create separate spreadsheets for each document?
-        writer = pd.ExcelWriter(base_dir + '\\' + 'summary_table' + year_int + '.xlsx', engine='xlsxwriter')
+        writer = pd.ExcelWriter(base_dir + '\\' + 'summary_table' + str(year_int) + '.xlsx', engine='xlsxwriter')
         df.to_excel(writer,doc)
         writer.save()
         writer.close()
