@@ -5,14 +5,14 @@ from variables import api_key, fips,variable_list
 
 # input a list of counties, Lucas, Monroe, and Wood by default
 def calculate_regional_rates(counties):
-    flds = ['GEO_ID','NAME'] + variable_list
+    # flds = ['GEO_ID','NAME'] + variable_list
     # counties = ['Lucas','Ottawa','Monroe','Sandusky','Wood']
     filtered_dict = {county:fips[county] for county in counties}
     c = Census(api_key)
     df = pd.DataFrame()
     for county in filtered_dict:
         if county == 'Monroe':
-            temp_df = pd.DataFrame(c.acs5.state_county_subdivision(flds, fips[county][:2], fips[county][2:], '*'))
+            temp_df = pd.DataFrame(c.acs5.state_county_subdivision(variable_list, fips[county][:2], fips[county][2:], '*'))
             temp_df = temp_df.loc[temp_df['county subdivision'].isin(['49700',  # Luna Pier
                                                                       '06740',  # Bedford
                                                                       '26320',  # Erie
@@ -20,7 +20,7 @@ def calculate_regional_rates(counties):
                                                                       ])]
             df = df.append(temp_df)
         else:
-            temp_df = pd.DataFrame(c.acs5.state_county(flds, fips[county][:2], fips[county][2:]))
+            temp_df = pd.DataFrame(c.acs5.state_county(variable_list, fips[county][:2], fips[county][2:]))
             df = df.append(temp_df)
 
     total_pop_est = sum(df['B03002_001E'])

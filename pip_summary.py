@@ -3,7 +3,7 @@
 # southern portion of Monroe county
 import pandas as pd
 from calculate_regional_rates import calculate_regional_rates
-from variables import poverty_level
+from variables import poverty_level,year_int
 from collections import namedtuple
 
 def summarize_region(counties_b, counties_t, base_dir):
@@ -26,6 +26,7 @@ def summarize_region(counties_b, counties_t, base_dir):
             item.loc[no_income, doc + '_ej'] = 'no data'
             item.loc[poc,doc + '_ej'] = 'people of color'
             item.loc[low_income & income & poc, doc + '_ej'] = 'both'
+            # print(item)
             item.to_csv(base_dir + '\\Title6_' + fld + '.csv')
         # but the summary table only needs to happen at the document level
         dict = {'Environmental Justice Group':['Regional Count','Regional Percent'],
@@ -56,7 +57,7 @@ def summarize_region(counties_b, counties_t, base_dir):
                 'Population for Whom Poverty Status is Determined'])
         print(df)
         # does it make sense to create separate spreadsheets for each document?
-        writer = pd.ExcelWriter(base_dir + '\\' + doc +'_summary_table.xlsx', engine='xlsxwriter')
+        writer = pd.ExcelWriter(base_dir + '\\' + 'summary_table' + year_int + '.xlsx', engine='xlsxwriter')
         df.to_excel(writer,doc)
         writer.save()
         writer.close()
