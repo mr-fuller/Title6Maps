@@ -17,12 +17,26 @@ from pip_summary import summarize_region
 
 from datetime import datetime
 start_time = datetime.now()
+print('  Testing year input...'),
 
+# Build the API URL
+variables_url = 'https://api.census.gov/data/' + str(year_int) + '/acs/acs5/variables.json'
+# Read in the data
+data = requests.get(url=variables_url)
+# Check to make sure we could pull variables
+while data.status_code == 404:
 
-base_dir = builddirectory()
+    print('\bNo data for ' + str(year_int) + '. Trying previous year')
+    year_int= year_int - 1
+    # Build the API URL
+    variables_url = 'https://api.census.gov/data/' + str(year_int) + '/acs/acs5/variables.json'
+    # Read in the data
+    data = requests.get(url=variables_url)
+print(year_int)
+base_dir = builddirectory(year_int)
 
-# acs_dict = buildacsdict()[0]
-# table_list = buildacsdict()[1]
+[acs_dict, table_list] = buildacsdict(year_int)
+ # = buildacsdict()[1]
 ##
 # DOWNLOAD ACS DATA
 ##
@@ -47,7 +61,7 @@ for location in api_pull:
 
     #if table == 'B01001':
     for df_t in dfs:
-        print(df_t)
+        # print(df_t)
         #df_t = pandas.read_csv(base_dir + '\\' + location + '\\' + table + geo)
         df_t['Percent 65 and Over'] = round((df_t['B01001_020E'] + df_t['B01001_021E'] + df_t['B01001_022E'] +
                                        df_t['B01001_023E'] + df_t['B01001_024E'] + df_t['B01001_025E'] +
@@ -74,6 +88,7 @@ for location in api_pull:
                                            df_t['B18101_032E'] + df_t['B18101_035E'] + df_t['B18101_038E']) / df_t['B18101_001E'] * 100,0)
 
         df_t['No Car Household Percentage'] = round((df_t['B25044_003E'] + df_t['B25044_010E']) / df_t['B25044_001E'] * 100,0)
+        df_t['Median Age'] = df_t['B01002_001E']
         df_t.set_index('NAME',inplace=True)
     print('  Assembling Title6 Stats...'),
     # for census tracts
@@ -103,10 +118,10 @@ for location in api_pull:
 # Determine EJ status of block groups
 print(' Determining EJ Areas ... ')
 
-summarize_region(counties_b,counties_t,base_dir)
+summarize_region(counties_b,counties_t,base_dir, year_int)
 # pip_summary(counties_b,counties_t,base_dir,'pip')
 # This section joins tables to respective geographies
-# spatialize(base_dir)
+spatialize(base_dir)
 
 # manipulate layers to display data
 

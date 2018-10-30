@@ -1,7 +1,7 @@
 from datetime import datetime
 import os
-from variables import year_int,api_pull
-def builddirectory():
+from variables import api_pull
+def builddirectory(year_int):
     ##
     # GET THE USER'S INPUT ON WHAT DATA TO PULL
     ##
@@ -14,7 +14,7 @@ def builddirectory():
     ##
     print('  Building directory structure on Z:\...'),  # add a line to handle exceptions?
     acs_year = str(year_int-4) + 'to' + str(year_int)[-2:]
-    base_dir = "Z:/fullerm/Census_Bureau/American_Community_Survey/" + acs_year
+    base_dir = "//DELLSERVER2/UserData/fullerm/Census_Bureau/American_Community_Survey/" + acs_year
     # Create base directory if it doesn't exist
     if not os.path.exists(base_dir):
         os.makedirs(base_dir)

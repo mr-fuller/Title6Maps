@@ -1,9 +1,9 @@
 import requests
-from variables import year_int
 
 
-def buildacsdict():
-    from variables import year_int
+
+def buildacsdict(year_int):
+
     ##
     # PULLING THE VARIABLE LIST FROM API
     ##
@@ -18,20 +18,20 @@ def buildacsdict():
     # Read in the data
     data = requests.get(url=variables_url)
     # Check to make sure we could pull variables
-    while data.status_code == 404:
-
-        print('\bNo data for ' + str(year_int) + '. Trying previous year')
-        year_int= year_int - 1
-        # Build the API URL
-        variables_url = 'https://api.census.gov/data/' + str(year_int) + '/acs/acs5/variables.json'
-        # Read in the data
-        data = requests.get(url=variables_url)
-        # import sys
-
-        # sys.exit('You entered an invalid ACS year.  Please try again.')
-    else:
-        data = data.json()
-        print('\bDone retrieving data for ' + str(year_int))
+    # while data.status_code == 404:
+    #
+    #     print('\bNo data for ' + str(year_int) + '. Trying previous year')
+    #     year_int= year_int - 1
+    #     # Build the API URL
+    #     variables_url = 'https://api.census.gov/data/' + str(year_int) + '/acs/acs5/variables.json'
+    #     # Read in the data
+    #     data = requests.get(url=variables_url)
+    #     # import sys
+    #
+    #     # sys.exit('You entered an invalid ACS year.  Please try again.')
+    # else:
+    data = data.json()
+    print('\bDone retrieving data for ' + str(year_int))
 
     ##
     # BUILDING ACS TABLE VARIABLE LIST DICTIONARY

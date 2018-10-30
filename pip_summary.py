@@ -3,10 +3,10 @@
 # southern portion of Monroe county
 import pandas as pd
 from calculate_regional_rates import calculate_regional_rates
-from variables import poverty_level,year_int
+from variables import poverty_level
 from collections import namedtuple
 
-def summarize_region(counties_b, counties_t, base_dir):
+def summarize_region(counties_b, counties_t, base_dir, year_int):
     geotuple = namedtuple('geotuple',['b','t'])
     dfs = geotuple(counties_b,counties_t)
     counties = ['Lucas', 'Monroe', 'Wood']
