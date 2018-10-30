@@ -1,7 +1,7 @@
 from datetime import datetime
 #def variables():
 api_key = 'b7da053b9e664586b9e559dba9e73780602f0aab'  # CGR's API key
-year_int = datetime.now().year - 2
+year_int = datetime.now().year
 
 #HHS value for a family of four for 2016, THIS has to be updated annually; can i scrape this value?
 poverty_level = 24300
