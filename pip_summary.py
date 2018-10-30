@@ -10,6 +10,7 @@ def summarize_region(counties_b, counties_t, base_dir):
     geotuple = namedtuple('geotuple',['b','t'])
     dfs = geotuple(counties_b,counties_t)
     counties = ['Lucas', 'Monroe', 'Wood']
+    writer = pd.ExcelWriter(base_dir + '\\' + 'summary_table' + str(year_int) + '.xlsx', engine='xlsxwriter')
     for doc, study_area in {'pip': counties +['Ottawa', 'Sandusky'], 'tip': counties}.items():
         region_rates = calculate_regional_rates(study_area)
         # determine ej status for TIP and PIP study areas in the same data set
@@ -55,12 +56,12 @@ def summarize_region(counties_b, counties_t, base_dir):
                 'Total Households',
                 'Population of non-institutionalized civilians',
                 'Population for Whom Poverty Status is Determined'])
-        print(df)
+        # print(df)
         # does it make sense to create separate spreadsheets for each document?
-        writer = pd.ExcelWriter(base_dir + '\\' + 'summary_table' + str(year_int) + '.xlsx', engine='xlsxwriter')
+
         df.to_excel(writer,doc)
-        writer.save()
-        writer.close()
+    writer.save()
+    writer.close()
 
 
 if __name__ == "__main__":
