@@ -12,7 +12,6 @@ def download_and_save_data(acs_dict, fips, location, api_key, base_dir):
     c = Census(api_key)
     # Since there is a 50 variable maximum we need to see how many calls
     # to the API we need to make to get all the variables.
-
     tract_data = pd.DataFrame()
     block_group_data = pd.DataFrame()
     for county in fips:

@@ -15,6 +15,7 @@ from downloadandsave import download_and_save_data
 from spatialize import spatialize
 from pip_summary import summarize_region
 
+
 from datetime import datetime
 start_time = datetime.now()
 print('  Testing year input...'),
@@ -121,7 +122,7 @@ print(' Determining EJ Areas ... ')
 summarize_region(counties_b,counties_t,base_dir, year_int)
 # pip_summary(counties_b,counties_t,base_dir,'pip')
 # This section joins tables to respective geographies
-spatialize(base_dir)
+# spatialize(base_dir)
 
 # manipulate layers to display data
 

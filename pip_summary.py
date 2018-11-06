@@ -5,8 +5,10 @@ import pandas as pd
 from calculate_regional_rates import calculate_regional_rates
 from variables import poverty_level
 from collections import namedtuple
+from sqlalchemy import create_engine
 
 def summarize_region(counties_b, counties_t, base_dir, year_int):
+    engine = create_engine("postgresql://postgres:laskdjfhiweiofoies@localhost/title6")
     geotuple = namedtuple('geotuple',['b','t'])
     dfs = geotuple(counties_b,counties_t)
     counties = ['Lucas', 'Monroe', 'Wood']
@@ -29,6 +31,7 @@ def summarize_region(counties_b, counties_t, base_dir, year_int):
             item.loc[low_income & income & poc, doc + '_ej'] = 'both'
             # print(item)
             item.to_csv(base_dir + '\\Title6_' + fld + '.csv')
+            item.to_sql("title6_"+ fld, engine,if_exists='replace')
         # but the summary table only needs to happen at the document level
         dict = {'Environmental Justice Group':['Regional Count','Regional Percent'],
                 'Minority':[region_rates[8],region_rates[0]],
