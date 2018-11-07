@@ -14,7 +14,7 @@ def builddirectory(year_int):
     ##
     print('  Building directory structure on Z:\...'),  # add a line to handle exceptions?
     acs_year = str(year_int-4) + 'to' + str(year_int)[-2:]
-    base_dir = "//DELLSERVER2/UserData/fullerm/Census_Bureau/American_Community_Survey/" + acs_year
+    base_dir = "C:/Users/fullerm/OneDrive - Toledo Metropolitan Area Council of Governments/Documents/Census_Bureau/American_Community_Survey/" + acs_year
     # Create base directory if it doesn't exist
     if not os.path.exists(base_dir):
         os.makedirs(base_dir)
@@ -28,4 +28,4 @@ def builddirectory(year_int):
     return base_dir
 
 if __name__ == '__main__':
-    builddirectory()
+    builddirectory(2016)
