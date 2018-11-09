@@ -10,9 +10,9 @@ import os
 import pandas as pd
 from variables import year_int,api_pull,api_key,fips, variable_list, poverty_level
 from builddirectory import builddirectory
-from buildacsdict import buildacsdict
+# from buildacsdict import buildacsdict
 from downloadandsave import download_and_save_data
-from spatialize import spatialize
+# from spatialize import spatialize
 from pip_summary import summarize_region
 
 
@@ -36,7 +36,7 @@ while data.status_code == 404:
 print(year_int)
 base_dir = builddirectory(year_int)
 
-[acs_dict, table_list] = buildacsdict(year_int)
+# [acs_dict, table_list] = buildacsdict(year_int)
  # = buildacsdict()[1]
 ##
 # DOWNLOAD ACS DATA
@@ -47,75 +47,54 @@ not_available_via_api = list()  # This will hold the tables we can't get via the
 i = 0
 counties_t = pd.DataFrame()
 counties_b = pd.DataFrame()
-for location in api_pull:
-    i += 1
-    print('    '+location+' (Location '+str(i)+' of '+str(len(api_pull))+')')
-    # j = 0
-    # for table in api_pull[location]:
-        # j += 1
-        # print('      Table (' + str(j) + ' of ' + str(len(api_pull[location])) + ')')
-    # api_url_base = 'http://api.census.gov/data/' + str(year_int) + '/acs/acs5?get=NAME'
-    # if table in table_list:
-    dfs = download_and_save_data(variable_list, fips, location, api_key, base_dir)
-    df2_t = pd.DataFrame()
-    df2_b = pd.DataFrame()
 
-    #if table == 'B01001':
-    for df_t in dfs:
-        # print(df_t)
-        #df_t = pandas.read_csv(base_dir + '\\' + location + '\\' + table + geo)
-        df_t['Percent 65 and Over'] = round((df_t['B01001_020E'] + df_t['B01001_021E'] + df_t['B01001_022E'] +
-                                       df_t['B01001_023E'] + df_t['B01001_024E'] + df_t['B01001_025E'] +
-                                       df_t['B01001_044E'] + df_t['B01001_045E'] + df_t['B01001_046E'] +
-                                       df_t['B01001_047E'] + df_t['B01001_048E'] + df_t['B01001_049E']) / df_t['B01001_001E'] * 100,0)
+dfs = download_and_save_data(variable_list, fips, api_key, base_dir)
 
-        df_t['Minority Percentage'] = round((df_t['B03002_001E'] - df_t['B03002_003E']) / df_t['B03002_001E'] * 100,0)
+print('  Assembling Title6 Stats...'),
+for df_t in dfs:
+    # print(df_t)
+    #df_t = pandas.read_csv(base_dir + '\\' + location + '\\' + table + geo)
+    df_t['Percent 65 and Over'] = round((df_t['B01001_020E'] + df_t['B01001_021E'] + df_t['B01001_022E'] +
+                                   df_t['B01001_023E'] + df_t['B01001_024E'] + df_t['B01001_025E'] +
+                                   df_t['B01001_044E'] + df_t['B01001_045E'] + df_t['B01001_046E'] +
+                                   df_t['B01001_047E'] + df_t['B01001_048E'] + df_t['B01001_049E']) / df_t['B01001_001E'] * 100,0)
 
-        df_t['Percent English Less than Very Well'] = round((df_t['B16004_001E'] - (df_t['B16004_003E'] + df_t['B16004_005E'] +
-                                                                              df_t['B16004_010E'] + df_t['B16004_015E'] +
-                                                                              df_t['B16004_020E'] + df_t['B16004_025E'] +
-                                                                              df_t['B16004_027E'] + df_t['B16004_032E'] +
-                                                                              df_t['B16004_037E'] + df_t['B16004_042E'] +
-                                                                              df_t['B16004_047E'] + df_t['B16004_049E'] +
-                                                                              df_t['B16004_054E'] + df_t['B16004_059E'] +
-                                                                              df_t['B16004_064E'])) / df_t['B16004_001E'] * 100,0)
+    df_t['Minority Percentage'] = round((df_t['B03002_001E'] - df_t['B03002_003E']) / df_t['B03002_001E'] * 100,0)
 
-        df_t['Household Poverty Percentage'] = round(df_t['B17017_002E'] / df_t['B17017_001E'] * 100,0)
-        df_t['Individual Poverty Percentage'] = round(df_t['B17021_002E'] / df_t['B17021_001E'] * 100,0)
+    df_t['Percent English Less than Very Well'] = round((df_t['B16004_001E'] - (df_t['B16004_003E'] + df_t['B16004_005E'] +
+                                                                          df_t['B16004_010E'] + df_t['B16004_015E'] +
+                                                                          df_t['B16004_020E'] + df_t['B16004_025E'] +
+                                                                          df_t['B16004_027E'] + df_t['B16004_032E'] +
+                                                                          df_t['B16004_037E'] + df_t['B16004_042E'] +
+                                                                          df_t['B16004_047E'] + df_t['B16004_049E'] +
+                                                                          df_t['B16004_054E'] + df_t['B16004_059E'] +
+                                                                          df_t['B16004_064E'])) / df_t['B16004_001E'] * 100,0)
 
-        df_t['Percent with Disability'] = round((df_t['B18101_004E'] + df_t['B18101_007E'] + df_t['B18101_010E'] +
-                                           df_t['B18101_013E'] + df_t['B18101_016E'] + df_t['B18101_019E'] +
-                                           df_t['B18101_023E'] + df_t['B18101_026E'] + df_t['B18101_029E'] +
-                                           df_t['B18101_032E'] + df_t['B18101_035E'] + df_t['B18101_038E']) / df_t['B18101_001E'] * 100,0)
+    df_t['Household Poverty Percentage'] = round(df_t['B17017_002E'] / df_t['B17017_001E'] * 100,0)
+    df_t['Individual Poverty Percentage'] = round(df_t['B17021_002E'] / df_t['B17021_001E'] * 100,0)
 
-        df_t['No Car Household Percentage'] = round((df_t['B25044_003E'] + df_t['B25044_010E']) / df_t['B25044_001E'] * 100,0)
-        df_t['Median Age'] = df_t['B01002_001E']
-        df_t['geoid_join'] = df_t.GEO_ID.str[9:]
-        df_t.set_index('NAME',inplace=True)
-    print('  Assembling Title6 Stats...'),
-    # for census tracts
+    df_t['Percent with Disability'] = round((df_t['B18101_004E'] + df_t['B18101_007E'] + df_t['B18101_010E'] +
+                                       df_t['B18101_013E'] + df_t['B18101_016E'] + df_t['B18101_019E'] +
+                                       df_t['B18101_023E'] + df_t['B18101_026E'] + df_t['B18101_029E'] +
+                                       df_t['B18101_032E'] + df_t['B18101_035E'] + df_t['B18101_038E']) / df_t['B18101_001E'] * 100,0)
 
-    csv_path2 = base_dir + '\\' + location
-        #dfs[1].to_csv(os.path.join(csv_path2, 'Title6_t.csv'))
+    df_t['No Car Household Percentage'] = round((df_t['B25044_003E'] + df_t['B25044_010E']) / df_t['B25044_001E'] * 100,0)
+    df_t['Median Age'] = df_t['B01002_001E']
+    df_t['geoid_join'] = df_t.GEO_ID.str[9:]
+    df_t.set_index('NAME',inplace=True)
 
-        # for block groups
-        #dfs[0].to_csv(os.path.join(csv_path2,'Title6_b.csv'))
-        #for file in csv_path2:
-         #   for i in range(0,7,1):
-          #      df + i + b = pandas.read_csv(os.path.join(csv_path2,file))
+print('\bDone')
+print('  Appending Title 6 Stats...'),
+# csv_path = base_dir + '\\' + location + '\\Title6.csv'
 
-    print('\bDone')
-    print('  Appending Title 6 Stats...'),
-    # csv_path = base_dir + '\\' + location + '\\Title6.csv'
-
-    df00t = dfs[1] #pandas.read_csv(csv_path2 + '\\Title6_t.csv')
-    counties_t = counties_t.append(df00t)
-    counties_t.to_csv(base_dir + '\\Title6_t.csv')
-    # for block groups
-    df00b = dfs[0] #pandas.read_csv(csv_path2 +'\\Title6_b.csv')
-    counties_b = counties_b.append(df00b)
-    counties_b.to_csv(base_dir + '\\Title6_b.csv')
-    print('\bDone')
+df00t = dfs[1] #pandas.read_csv(csv_path2 + '\\Title6_t.csv')
+counties_t = counties_t.append(df00t)
+counties_t.to_csv(base_dir + '\\Title6_t.csv')
+# for block groups
+df00b = dfs[0] #pandas.read_csv(csv_path2 +'\\Title6_b.csv')
+counties_b = counties_b.append(df00b)
+counties_b.to_csv(base_dir + '\\Title6_b.csv')
+print('\bDone')
 
 # Determine EJ status of block groups
 print(' Determining EJ Areas ... ')
