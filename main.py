@@ -163,7 +163,7 @@ msg['To'] = TO
 msg['Subject'] = SUBJECT
 with smtplib.SMTP('smtp-mail.outlook.com',587) as s:
     s.starttls()
-    s.login('mikerfuller@live.com','zkecjvqtvcplzysx')
+    s.login('mikerfuller@live.com',os.environ['livemail_password'])
     s.send_message(msg)
 '''
 end_time = datetime.now()

@@ -6,9 +6,10 @@ from calculate_regional_rates import calculate_regional_rates
 from variables import poverty_level
 from collections import namedtuple
 from sqlalchemy import create_engine
+import os
 
 def summarize_region(counties_b, counties_t, base_dir, year_int):
-    engine = create_engine("postgresql://postgres:laskdjfhiweiofoies@localhost/title6")
+    engine = create_engine("postgresql://postgres:" + os.environ['postgres_password'] + "@localhost/title6")
     geotuple = namedtuple('geotuple',['b','t'])
     dfs = geotuple(counties_b,counties_t)
     counties = ['Lucas', 'Monroe', 'Wood']
