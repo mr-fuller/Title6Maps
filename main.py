@@ -90,6 +90,7 @@ for location in api_pull:
 
         df_t['No Car Household Percentage'] = round((df_t['B25044_003E'] + df_t['B25044_010E']) / df_t['B25044_001E'] * 100,0)
         df_t['Median Age'] = df_t['B01002_001E']
+        df_t['geoid_join'] = df_t.GEO_ID.str[9:]
         df_t.set_index('NAME',inplace=True)
     print('  Assembling Title6 Stats...'),
     # for census tracts

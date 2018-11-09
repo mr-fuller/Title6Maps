@@ -25,7 +25,9 @@ def download_and_save_data(acs_dict, fips, location, api_key, base_dir):
     # csv_path_t = base_dir + '\\' + location + '\\Title6_t.csv'
     # csv_path_b = base_dir + '\\' + location + '\\Title6_b.csv'
     tract_data = pd.concat([tract_data[['NAME','GEO_ID']],tract_data.drop(['NAME','GEO_ID'], axis=1).astype(dtype = 'float', na = 0)],axis=1)
+    # tract_data['geoid_join'] = tract_data['GEO_ID'][9:]
     block_group_data = pd.concat([block_group_data[['NAME','GEO_ID']], block_group_data.drop(['NAME','GEO_ID'], axis=1).astype(dtype = 'float', na = 0)], axis=1)
+    # block_group_data['geoid_join'] = block_group_data['GEO_ID'][9:]
     print('      Table ' + location + ' Downloaded and Saved')
     return [block_group_data,tract_data]
 
