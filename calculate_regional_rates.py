@@ -18,10 +18,10 @@ def calculate_regional_rates(counties):
                                                                       '26320',  # Erie
                                                                       '86740'  # Whiteford
                                                                       ])]
-            df = df.append(temp_df)
+            df = df.append(temp_df, sort=False)
         else:
             temp_df = pd.DataFrame(c.acs5.state_county(variable_list, fips[county][:2], fips[county][2:]))
-            df = df.append(temp_df)
+            df = df.append(temp_df,sort=False)
 
     total_pop_est = sum(df['B03002_001E'])
     total_hhs_est = sum(df['B25044_001E'])
