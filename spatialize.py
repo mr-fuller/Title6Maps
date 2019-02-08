@@ -19,32 +19,7 @@ def spatialize(base_dir):
     TimeDate = datetime.now()
     TimeDateStr = "Title6_" + TimeDate.strftime('%Y%m%d%H%M')
     print(TimeDateStr)
-    # conn = psycopg2.connect(database="title6", host="localhost", user="postgres",password="laskdjfhiweiofoies")
-    # flds = """
-    # name varchar, geo_id varchar, """ + " numeric, ".join(variable_list[2:])
-    # print(flds)
-    # commands = (
-    #     """
-    #     CREATE TABLE IF NOT EXISTS tract_data (""" + flds +
-    #     """ numeric );"""
-    #     ,
-    #     """
-    #     CREATE TABLE IF NOT EXISTS bg_data ();
-    #     """
-
-    # )
-    # cur = conn.cursor()
-    # for command in commands:
-    #     cur.execute(command)
-    # t = open(base_dir + '/Title6_t.csv')
-    # bg = open(base_dir + '/Title6_b.csv')
-    # cur.copy_from(t,'tract_data')
-    # cur.copy_from(bg,'bg_data')
-    # cur.close()
-    # conn.commit()
-    # if conn is not None:
-    #     conn.close()
-    # driver = ogr.GetDriverByName("OpenFileGDB")
+   
     outputGDB = arcpy.CreateFileGDB_management(base_dir,TimeDateStr + ".gdb")
     arcpy.env.workspace = base_dir
     tractdata = base_dir + '\\Title6_t.txt'
