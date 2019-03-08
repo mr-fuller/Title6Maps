@@ -3,13 +3,15 @@
 # southern portion of Monroe county
 import pandas as pd
 from calculate_regional_rates import calculate_regional_rates
-from variables import poverty_level
+#from variables import poverty_level
 from collections import namedtuple
 from sqlalchemy import create_engine
 import os
+from variables import pg_password,pg_username
 
-def summarize_region(counties_b, counties_t, base_dir, year_int):
-    engine = create_engine("postgresql://postgres:" + os.environ['postgres_password'] + "@localhost/title6")
+def summarize_region(counties_b, counties_t, base_dir, year_int,poverty_level):
+    # engine = create_engine("postgresql://postgres:" + os.getenv('postgres_password') + "@localhost/title6")
+    engine = create_engine(f"postgresql://{pg_username}:{pg_password}@localhost/title6")
     geotuple = namedtuple('geotuple',['b','t'])
     dfs = geotuple(counties_b,counties_t)
     counties = ['Lucas', 'Monroe', 'Wood']
@@ -48,18 +50,18 @@ def summarize_region(counties_b, counties_t, base_dir, year_int):
                 'Population for Whom Poverty Status is Determined':[region_rates[10],region_rates[10]/region_rates[10]*100]
                 }
         df = pd.DataFrame(dict).transpose()
-        df=df.reindex(index=['Environmental Justice Group',
-                'Minority',
-                'Low Income',
-                'Age 65 and Older',
-                'Disabled',
-                'Zero Car',
-                'Limited English Proficiency',
-                'Median Income',
-                'Total Population Estimate',
-                'Total Households',
-                'Population of non-institutionalized civilians',
-                'Population for Whom Poverty Status is Determined'])
+        df = df.reindex(index=['Environmental Justice Group',
+                               'Minority',
+                               'Low Income',
+                               'Age 65 and Older',
+                               'Disabled',
+                               'Zero Car',
+                               'Limited English Proficiency',
+                               'Median Income',
+                               'Total Population Estimate',
+                               'Total Households',
+                               'Population of non-institutionalized civilians',
+                               'Population for Whom Poverty Status is Determined'])
         # print(df)
         # does it make sense to create separate spreadsheets for each document?
 

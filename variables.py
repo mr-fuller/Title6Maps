@@ -1,10 +1,13 @@
 from datetime import datetime
+import json
 #def variables():
 api_key = 'b7da053b9e664586b9e559dba9e73780602f0aab'  # CGR's API key
 year_int = datetime.now().year
+with open('credentials.json') as creds:
+    credentials = json.load(creds)
+pg_username = credentials['pg_username']
+pg_password = credentials['pg_password']
 
-#HHS value for a family of four for 2016, THIS has to be updated annually; can i scrape this value?
-poverty_level = 24300
 
 fips = {
     'Fulton': '39051',
@@ -36,6 +39,14 @@ variable_list = [#'B18101',  # The table number for disability information
                  'B19013_001E',
                  # median age
                  'B01002_001E',
+                 # no computer households or mobile only households
+                 'B28001_001E',  # total households
+                 'B28001_006E',  # smart phone only
+                 'B28001_008E',  # tablet only
+                 'B28001_011E',  # no computers
+                 # household internet access
+                 'B28002_001E',  # total households
+                 'B28002_013E',  # no internet access
                  #disability
                  'B18101_004E','B18101_007E','B18101_010E','B18101_013E',
                  'B18101_016E','B18101_019E','B18101_023E','B18101_026E',
