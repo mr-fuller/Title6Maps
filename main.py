@@ -8,7 +8,7 @@ import requests
 import pandas
 import os
 import pandas as pd
-from variables import year_int,api_pull,api_key,fips, variable_list, poverty_level
+from variables import year_int,api_pull,api_key,fips, variable_list, email_id, email_password, email_server, email_port
 from builddirectory import builddirectory
 # from buildacsdict import buildacsdict
 from downloadandsave import download_and_save_data
@@ -23,19 +23,41 @@ print('  Testing year input...'),
 # Build the API URL
 variables_url = 'https://api.census.gov/data/' + str(year_int) + '/acs/acs5/variables.json'
 # Read in the data
-data = requests.get(url=variables_url)
+response = requests.get(url=variables_url)
 # Check to make sure we could pull variables
-while data.status_code == 404:
+while response.status_code == 404:
 
     print('\bNo data for ' + str(year_int) + '. Trying previous year')
     year_int= year_int - 1
     # Build the API URL
     variables_url = 'https://api.census.gov/data/' + str(year_int) + '/acs/acs5/variables.json'
     # Read in the data
-    data = requests.get(url=variables_url)
+    response = requests.get(url=variables_url)
 print(year_int)
 base_dir = builddirectory(year_int)
+poverty_level = 0
 
+#
+print("Getting poverty level data... ")
+#HHS value for a family of four for 2016, THIS has to be updated annually; can i scrape this value?
+poverty_dict = {
+    '2019': 25750,
+    '2018': 25100,
+    '2017': 24600,
+    '2016': 24300,
+    '2015': 24250,
+    '2014': 23850,
+    '2013': 23550,
+    '2012': 23050,
+    '2011': 22350,
+    '2010': 22050
+                }
+if str(year_int) not in poverty_dict.keys():
+    print('No Poverty Level data available for that year. Please update it, Mike.')
+    quit()
+else:
+    poverty_level = poverty_dict[str(year_int)]
+    print('Poverty Level for a family of 4 in ' + str(year_int) + ' is $' + str(poverty_level))
 # [acs_dict, table_list] = buildacsdict(year_int)
  # = buildacsdict()[1]
 ##
@@ -44,11 +66,16 @@ base_dir = builddirectory(year_int)
 
 print('  Downloading tables for')
 not_available_via_api = list()  # This will hold the tables we can't get via the API
+# eliminate/skip variables not available in api for that year
+for i in variable_list[:]:
+    if i not in response.json():
+        not_available_via_api.append(i)
+        variable_list.remove(i)
 i = 0
 counties_t = pd.DataFrame()
 counties_b = pd.DataFrame()
 
-dfs = download_and_save_data(variable_list, fips, api_key, base_dir)
+dfs = download_and_save_data(variable_list, fips, api_key, year_int)
 
 print('  Assembling Title6 Stats...'),
 for df_t in dfs:
@@ -80,12 +107,16 @@ for df_t in dfs:
 
     df_t['No Car Household Percentage'] = round((df_t['B25044_003E'] + df_t['B25044_010E']) / df_t['B25044_001E'] * 100,0)
     df_t['Median Age'] = df_t['B01002_001E']
+    df_t['Mobile Only Household'] = round((df_t['B28001_006E']+df_t['B28001_008E'])/ df_t['B28001_001E']*100,0)
+    df_t['No Internet Household'] = round(df_t['B28002_013E']/df_t['B28002_001E']*100,0)
     df_t['geoid_join'] = df_t.GEO_ID.str[9:]
     df_t.set_index('NAME',inplace=True)
 
 print('\bDone')
 print('  Appending Title 6 Stats...'),
 # csv_path = base_dir + '\\' + location + '\\Title6.csv'
+
+## I can consolidate lines 115-122 to a couple lines in the for loop if I use df.name or namedtuple
 
 df00t = dfs[1] #pandas.read_csv(csv_path2 + '\\Title6_t.csv')
 counties_t = counties_t.append(df00t)
@@ -99,7 +130,7 @@ print('\bDone')
 # Determine EJ status of block groups
 print(' Determining EJ Areas ... ')
 
-summarize_region(counties_b,counties_t,base_dir, year_int)
+summarize_region(counties_b,counties_t,base_dir, year_int,poverty_level)
 # pip_summary(counties_b,counties_t,base_dir,'pip')
 # This section joins tables to respective geographies
 # spatialize(base_dir)
@@ -108,7 +139,7 @@ summarize_region(counties_b,counties_t,base_dir, year_int)
 
 # export to pdf
 print('\bDone')
-print('All data is now stored on the Z drive!')
+print('All data is now stored on OneDrive and Postgres!')
 print('\rThe following tables were not downloaded:')
 for table in not_available_via_api:
     print('  ' + table)
@@ -129,22 +160,22 @@ arcpy.StageService_server(sddraft, sd)
 arcpy.UploadServiceDefinition_server(sd,'My Hosted Services')
 print(' Uploaded!')
 
-print('\bDone')
-
+print('\bDone')'''
+print(' Sending Email Notification...')
 import smtplib
 from email.mime.text import MIMEText
 SUBJECT = 'Title6 Script Complete'
-FROM = 'mikerfuller@live.com'
-TO = 'fuller@tmacog.org'
-msg = MIMEText(str(year_int-1)+ " ACS Data now available on the Z Drive and ArcGIS Online")
+FROM = email_id
+TO = 'mrfuller460@gmail.com'
+msg = MIMEText(str(year_int) + " ACS Data now available on Postgres and in " + base_dir)
 msg['From'] = FROM
 msg['To'] = TO
 msg['Subject'] = SUBJECT
-with smtplib.SMTP('smtp-mail.outlook.com',587) as s:
+with smtplib.SMTP(email_server, email_port) as s:
     s.starttls()
-    s.login('mikerfuller@live.com',os.environ['livemail_password'])
+    s.login(email_id,email_password)
     s.send_message(msg)
-'''
+print('\bDone')
 end_time = datetime.now()
 elapsed = end_time - start_time
 print("Script complete in " + str(elapsed))
