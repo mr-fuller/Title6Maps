@@ -27,7 +27,7 @@ def summarize_region(counties_b, counties_t, base_dir, year_int,poverty_level):
             income = item['B19013_001E'] > 0
             no_income = item['B19013_001E'] < 0
 
-            poc = item['Minority Percentage'] > region_rates[8]
+            poc = item['Minority Percentage'] > region_rates[0]
             item.loc[low_income & income,doc + '_ej'] = 'low income'
             item.loc[no_income, doc + '_ej'] = 'no data'
             item.loc[poc,doc + '_ej'] = 'people of color'
