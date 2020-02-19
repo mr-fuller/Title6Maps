@@ -1,7 +1,7 @@
 from datetime import datetime
 import json
 #def variables():
-api_key = 'b7da053b9e664586b9e559dba9e73780602f0aab'  # CGR's API key
+
 # year_int = datetime.now().year
 year_int = 2017
 with open('/media/mike/OS/Users/fullerm/OneDrive/Documents/Work Computer Files/PycharmProjects/Title6Maps/credentials.json') as creds:
@@ -12,7 +12,7 @@ email_id = credentials['email_id']
 email_password = credentials['email_password']
 email_server = credentials['email_server']
 email_port = credentials['email_port']
-
+api_key = credentials['api_key']
 
 fips = {
     'Fulton': '39051',
@@ -74,7 +74,12 @@ variable_list = [#'B18101',  # The table number for disability information
                  'B01001_047E','B01001_048E','B01001_049E',
                  'B01001_001E'  # total population estimate
                  ]
+#over 65 variables; is this an improvement over hard coding variables?
+# for i in range(20,26):
+#     variable_list.append(f"B01001_0{str(i).zfill(2)}E")
 
+# for i in range(44,50):
+#     variable_list.append(f"B01001_0{str(i).zfill(2)}E")
 
 counties = ['Fulton', 'Hancock', 'Henry','Huron', 'Lucas', 'Ottawa', 'Putnam', 'Sandusky', 'Seneca', 'Wood', 'Lenawee','Monroe']
 api_pull = {}
