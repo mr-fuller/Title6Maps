@@ -1,1 +1,5 @@
 *.json
+*.idea
+*.pyc
+*.xml
+*.iml
