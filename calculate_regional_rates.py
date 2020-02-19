@@ -40,6 +40,8 @@ def calculate_regional_rates(counties):
         df['B16004_003E'] + df['B16004_005E'] + df['B16004_010E'] + df['B16004_015E'] + df['B16004_020E'] +
         df['B16004_025E'] + df['B16004_027E'] + df['B16004_032E'] + df['B16004_037E'] + df['B16004_042E'] +
         df['B16004_047E'] + df['B16004_049E'] + df['B16004_054E'] + df['B16004_059E'] + df['B16004_064E'])
+    total_ej_est = sum(df['B03002_001E'] - df['B03002_003E'] + df['B17001H_002E'])
+    
     # median_income = (df['B19013_001E']*df['B03002_001E'])
     pip_poc_pct = total_poc_est / total_pop_est * 100
     pip_pov_pct = total_pov_est / total_pov_pop_est * 100
@@ -47,6 +49,7 @@ def calculate_regional_rates(counties):
     pip_disabled_pct = total_disabled_est / total_pop_est * 100
     pip_nocar_pct = total_nocar_est / total_hhs_est * 100
     pip_lep_pct = total_lep_est / total_pop_est * 100
+    ej_pop_pct = round(total_ej_est/total_pop_est*100,0)
     return [pip_poc_pct,  # 0
             pip_pov_pct,  # 1
             pip_old_pct,  # 2
@@ -61,7 +64,10 @@ def calculate_regional_rates(counties):
             total_old_est, # 11
             total_disabled_est, # 12
             total_nocar_est, # 13
-            total_lep_est] # 14
+            total_lep_est, # 14
+            total_ej_est, #15
+            ej_pop_pct #16
+            ] 
     # dict = {'Environmental Justice Group': ['Regional Count', 'Regional Percent'],
     #         'Minority': [total_poc_est, pip_poc_pct],
     #         'Low Income': [total_pov_est, pip_pov_pct],

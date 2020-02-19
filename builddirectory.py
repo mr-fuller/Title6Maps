@@ -1,6 +1,7 @@
 from datetime import datetime
 import os
 from variables import api_pull
+from pathlib import Path
 def builddirectory(year_int):
     ##
     # GET THE USER'S INPUT ON WHAT DATA TO PULL
@@ -12,15 +13,15 @@ def builddirectory(year_int):
     ##
     # BUILD DIRECTORIES ON Z TO HOLD CSV FILES
     ##
-    print('  Building directory structure on Z:\...'),  # add a line to handle exceptions?
+    print('  Building directory structure on OneDrive...'),  # add a line to handle exceptions?
     acs_year = str(year_int-4) + 'to' + str(year_int)[-2:]
-    base_dir = "C:/Users/fullerm/OneDrive - Toledo Metropolitan Area Council of Governments/Documents/Census_Bureau/American_Community_Survey/" + acs_year
+    base_dir = Path(f"/media/mike/OS/Users/fullerm/OneDrive - Toledo Metropolitan Area Council of Governments/Documents/Census_Bureau/American_Community_Survey/{acs_year}")
     # Create base directory if it doesn't exist
     if not os.path.exists(base_dir):
         os.makedirs(base_dir)
     # Create subdirectories if they don't exist
     for geo in api_pull:
-        directory = base_dir + '\\' + geo
+        directory = base_dir.joinpath(geo)
         if not os.path.exists(directory):
             os.makedirs(directory)
     print('\bDone')
@@ -28,4 +29,4 @@ def builddirectory(year_int):
     return base_dir
 
 if __name__ == '__main__':
-    builddirectory(2016)
+    builddirectory(2017)

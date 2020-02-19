@@ -4,16 +4,18 @@
 # Download Title 6 data from the ACS
 # updated for use in arcgis Pro
 
-import requests
+import requests, json
 import pandas
 import os
 import pandas as pd
 from variables import year_int,api_pull,api_key,fips, variable_list, email_id, email_password, email_server, email_port
 from builddirectory import builddirectory
+from calculate_ej_indicators import calculate_ej_indicators
 # from buildacsdict import buildacsdict
 from downloadandsave import download_and_save_data
 # from spatialize import spatialize
 from pip_summary import summarize_region
+from pathlib import Path
 
 
 from datetime import datetime
@@ -64,67 +66,46 @@ else:
 # DOWNLOAD ACS DATA
 ##
 
-print('  Downloading tables for')
+data_str = response.json().get('variables')
+# json_data = json.loads(data_str)
+# print(data_str.keys())
 not_available_via_api = list()  # This will hold the tables we can't get via the API
 # eliminate/skip variables not available in api for that year
 for i in variable_list[:]:
-    if i not in response.json():
+    if i not in data_str.keys():
         not_available_via_api.append(i)
         variable_list.remove(i)
+print(f'Variables {not_available_via_api} not available.')
+print('  Downloading tables for')
+
 i = 0
 counties_t = pd.DataFrame()
 counties_b = pd.DataFrame()
-
+dfs = []
+# try:
 dfs = download_and_save_data(variable_list, fips, api_key, year_int)
+# except:
+    
+    # dfs = download_and_save_data(variable_list, fips, api_key, year_int)
 
 print('  Assembling Title6 Stats...'),
-for df_t in dfs:
-    # print(df_t)
-    #df_t = pandas.read_csv(base_dir + '\\' + location + '\\' + table + geo)
-    df_t['Percent 65 and Over'] = round((df_t['B01001_020E'] + df_t['B01001_021E'] + df_t['B01001_022E'] +
-                                   df_t['B01001_023E'] + df_t['B01001_024E'] + df_t['B01001_025E'] +
-                                   df_t['B01001_044E'] + df_t['B01001_045E'] + df_t['B01001_046E'] +
-                                   df_t['B01001_047E'] + df_t['B01001_048E'] + df_t['B01001_049E']) / df_t['B01001_001E'] * 100,0)
 
-    df_t['Minority Percentage'] = round((df_t['B03002_001E'] - df_t['B03002_003E']) / df_t['B03002_001E'] * 100,0)
+calculate_ej_indicators(dfs, year_int)
 
-    df_t['Percent English Less than Very Well'] = round((df_t['B16004_001E'] - (df_t['B16004_003E'] + df_t['B16004_005E'] +
-                                                                          df_t['B16004_010E'] + df_t['B16004_015E'] +
-                                                                          df_t['B16004_020E'] + df_t['B16004_025E'] +
-                                                                          df_t['B16004_027E'] + df_t['B16004_032E'] +
-                                                                          df_t['B16004_037E'] + df_t['B16004_042E'] +
-                                                                          df_t['B16004_047E'] + df_t['B16004_049E'] +
-                                                                          df_t['B16004_054E'] + df_t['B16004_059E'] +
-                                                                          df_t['B16004_064E'])) / df_t['B16004_001E'] * 100,0)
-
-    df_t['Household Poverty Percentage'] = round(df_t['B17017_002E'] / df_t['B17017_001E'] * 100,0)
-    df_t['Individual Poverty Percentage'] = round(df_t['B17021_002E'] / df_t['B17021_001E'] * 100,0)
-
-    df_t['Percent with Disability'] = round((df_t['B18101_004E'] + df_t['B18101_007E'] + df_t['B18101_010E'] +
-                                       df_t['B18101_013E'] + df_t['B18101_016E'] + df_t['B18101_019E'] +
-                                       df_t['B18101_023E'] + df_t['B18101_026E'] + df_t['B18101_029E'] +
-                                       df_t['B18101_032E'] + df_t['B18101_035E'] + df_t['B18101_038E']) / df_t['B18101_001E'] * 100,0)
-
-    df_t['No Car Household Percentage'] = round((df_t['B25044_003E'] + df_t['B25044_010E']) / df_t['B25044_001E'] * 100,0)
-    df_t['Median Age'] = df_t['B01002_001E']
-    df_t['Mobile Only Household'] = round((df_t['B28001_006E']+df_t['B28001_008E'])/ df_t['B28001_001E']*100,0)
-    df_t['No Internet Household'] = round(df_t['B28002_013E']/df_t['B28002_001E']*100,0)
-    df_t['geoid_join'] = df_t.GEO_ID.str[9:]
-    df_t.set_index('NAME',inplace=True)
 
 print('\bDone')
 print('  Appending Title 6 Stats...'),
 # csv_path = base_dir + '\\' + location + '\\Title6.csv'
 
-## I can consolidate lines 115-122 to a couple lines in the for loop if I use df.name or namedtuple
+## I can consolidate the following lines(?) to a couple lines in the for loop if I use df.name or namedtuple
 
 df00t = dfs[1] #pandas.read_csv(csv_path2 + '\\Title6_t.csv')
 counties_t = counties_t.append(df00t)
-counties_t.to_csv(base_dir + '\\Title6_t.csv')
+counties_t.to_csv(base_dir.joinpath('Title6_t.csv'))
 # for block groups
 df00b = dfs[0] #pandas.read_csv(csv_path2 +'\\Title6_b.csv')
 counties_b = counties_b.append(df00b)
-counties_b.to_csv(base_dir + '\\Title6_b.csv')
+counties_b.to_csv(base_dir.joinpath('Title6_b.csv'))
 print('\bDone')
 
 # Determine EJ status of block groups
@@ -167,7 +148,7 @@ from email.mime.text import MIMEText
 SUBJECT = 'Title6 Script Complete'
 FROM = email_id
 TO = 'mrfuller460@gmail.com'
-msg = MIMEText(str(year_int) + " ACS Data now available on Postgres and in " + base_dir)
+msg = MIMEText(f"{str(year_int)} ACS Data now available on Postgres and in {str(base_dir)}")
 msg['From'] = FROM
 msg['To'] = TO
 msg['Subject'] = SUBJECT

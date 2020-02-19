@@ -2,11 +2,16 @@ from datetime import datetime
 import json
 #def variables():
 api_key = 'b7da053b9e664586b9e559dba9e73780602f0aab'  # CGR's API key
-year_int = datetime.now().year
-with open('credentials.json') as creds:
+# year_int = datetime.now().year
+year_int = 2017
+with open('/media/mike/OS/Users/fullerm/OneDrive/Documents/Work Computer Files/PycharmProjects/Title6Maps/credentials.json') as creds:
     credentials = json.load(creds)
 pg_username = credentials['pg_username']
 pg_password = credentials['pg_password']
+email_id = credentials['email_id']
+email_password = credentials['email_password']
+email_server = credentials['email_server']
+email_port = credentials['email_port']
 
 
 fips = {
@@ -53,6 +58,7 @@ variable_list = [#'B18101',  # The table number for disability information
                  'B18101_029E','B18101_032E','B18101_035E','B18101_038E','B18101_001E',
                  #poverty
                  'B17017_002E','B17017_001E','B17021_001E','B17021_002E',
+                 'B17001H_002E', #poverty status (count) of persons white alone, non-hispanic
                  #esl
                  'B16004_001E','B16004_003E','B16004_005E','B16004_010E',
                  'B16004_015E','B16004_020E','B16004_025E','B16004_027E',
