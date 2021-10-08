@@ -43,6 +43,8 @@ poverty_level = 0
 print("Getting poverty level data... ")
 #HHS value for a family of four for 2016, THIS has to be updated annually; can i scrape this value?
 poverty_dict = {
+    '2021': 26500,
+    '2020': 26200,
     '2019': 25750,
     '2018': 25100,
     '2017': 24600,
