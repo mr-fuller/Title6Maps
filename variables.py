@@ -2,8 +2,8 @@ from datetime import datetime
 import json
 #def variables():
 
-# year_int = datetime.now().year
-year_int = 2017
+year_int = datetime.now().year
+#year_int = 2017
 with open('/media/mike/OS/Users/fullerm/OneDrive/Documents/Work Computer Files/PycharmProjects/Title6Maps/credentials.json') as creds:
     credentials = json.load(creds)
 pg_username = credentials['pg_username']
