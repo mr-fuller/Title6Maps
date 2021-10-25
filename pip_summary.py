@@ -23,7 +23,7 @@ def summarize_region(counties_b, counties_t, base_dir, year_int,poverty_level):
         'luc_woo': ['Lucas','Wood'], # I added this because Lance wanted EJ pop/pct estimates for Lucas and Wood Counties
         }
     for doc, study_area in loop_dict.items():
-        region_rates = calculate_regional_rates(study_area)
+        region_rates = calculate_regional_rates(study_area,year_int)
         # determine ej status for TIP and PIP study areas in the same data set
         for fld in dfs._fields:
             item = getattr(dfs,fld)

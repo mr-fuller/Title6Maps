@@ -1,6 +1,6 @@
 import pandas as pd
 from census import Census
-from variables import api_pull, variable_list, year_int
+# from variables import api_pull, variable_list, year_int
 
 
 ##

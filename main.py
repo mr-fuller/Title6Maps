@@ -16,6 +16,7 @@ from downloadandsave import download_and_save_data
 # from spatialize import spatialize
 from pip_summary import summarize_region
 from pathlib import Path
+# from add_to_agol import add_to_agol
 
 
 from datetime import datetime
@@ -113,7 +114,7 @@ print('\bDone')
 # Determine EJ status of block groups
 print(' Determining EJ Areas ... ')
 
-summarize_region(counties_b,counties_t,base_dir, year_int,poverty_level)
+summarize_region(counties_b,counties_t,base_dir, year_int, poverty_level)
 # pip_summary(counties_b,counties_t,base_dir,'pip')
 # This section joins tables to respective geographies
 # spatialize(base_dir)
@@ -129,6 +130,7 @@ for table in not_available_via_api:
 '''
 print('  Uploading to ArcGIS Online...')
 
+# add_to_agol()
 
 maup = m.listLayers()[0:2]
 for item in maup:

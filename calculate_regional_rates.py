@@ -4,11 +4,11 @@ from census import Census
 from variables import api_key, fips,variable_list
 
 # input a list of counties, Lucas, Monroe, and Wood by default
-def calculate_regional_rates(counties):
+def calculate_regional_rates(counties, year_int):
     # flds = ['GEO_ID','NAME'] + variable_list
     # counties = ['Lucas','Ottawa','Monroe','Sandusky','Wood']
     filtered_dict = {county:fips[county] for county in counties}
-    c = Census(api_key)
+    c = Census(api_key, year = year_int)
     df = pd.DataFrame()
     for county in filtered_dict:
         if county == 'Monroe':
